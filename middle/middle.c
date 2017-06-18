@@ -40,7 +40,84 @@ template_t login_rsp_template[] = {
 	{1, 'S', 8},
 	{-1, -1, -1}
 };
+template_t biz_over_req_template[] = {
+	{3, 'S', 8},
+	{16, 'L', 0},
+	{1, 'S', 8},
+	{-1, -1, -1}
+};
+template_t biz_over_rsp_template[] = {
+	{3, 'S', 8},
+	{16, 'L', 0},
+	{1, 'S', 8},
+	{-1, -1, -1}
+};	
+template_t logout_req_template[] = {
+	{1, 'S', 8},
+	{64, 'S', 64},
+	{-1, -1, -1}
+};
+template_t logout_rsp_template[] = {
+	{-1, -1, -1}
+};
 
+template_t ping_req_template[] = {
+	{16, 'S', 16},
+	{8, 'S', 8},
+	{-1, -1, -1}
+};
+template_t ping_rsp_template[] = {
+	{16, 'S', 16},
+	{8, 'S', 8},
+	{-1, -1, -1}
+};
+template_t add_vol_req_template[] = {
+	{16, 'S', 16},
+	{6, 'S', 8},
+	{10, 'S', 16},
+	{6, 'S', 8},
+	{16, 'L', 0},
+	{-1, -1, -1}
+};
+template_t add_vol_rsp_template[] = {
+	{5, 'S', 8},
+	{40, 'S', 40},
+	{16, 'S', 16},
+	{6, 'S', 8},
+	{10, 'S', 16},
+	{6, 'S', 8},
+	{16, 'L', 0},
+	{-1, -1, -1}
+};
+template_t cut_vol_req_template[] = {
+	{16, 'S', 16},
+	{6, 'S', 8},
+	{10, 'S', 16},
+	{6, 'S', 8},
+	{16, 'L', 0},
+	{-1, -1, -1}
+};
+template_t cut_vol_rsp_template[] = {
+	{5, 'S', 8},
+	{40, 'S', 40},
+	{16, 'S', 16},
+	{6, 'S', 8},
+	{10, 'S', 16},
+	{6, 'S', 8},
+	{16, 'L', 0},
+	{-1, -1, -1}
+};
+template_t trade_qry_req_template[] = {
+	{16, 'S', 16},
+	{-1, -1, -1}
+};
+template_t trade_qry_rsp_template[] = {
+	{8, 'S', 16},
+	{16, 'S', 16},
+	{8, 'S', 16},
+	{40, 'S', 40},
+	{-1, -1, -1}
+};
 static int __resolve_msg(void *in, const char *msg, template_t *temp)
 {
 	char tmp[129];
@@ -108,16 +185,34 @@ static void *__resolve_body(long long type, const char *body, size_t *len)
 			__resolve_msg((char *)new + sizeof(msg_head_t), body, login_req_template);
 			break;
 		case BIZ_OVER_REQ:
+			new = calloc(1, sizeof(biz_over_req_t));
+			*len = sizeof(biz_over_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, biz_over_req_template);
 			break;
 		case LOGOUT_REQ:
+			new = calloc(1, sizeof(logout_req_t));
+			*len = sizeof(logout_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, logout_req_template);
 			break;
 		case PING_REQ:
+			new = calloc(1, sizeof(ping_req_t));
+			*len = sizeof(ping_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, ping_req_template);
 			break;
 		case ADD_VOL_REQ:
+			new = calloc(1, sizeof(add_vol_req_t));
+			*len = sizeof(add_vol_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, add_vol_req_template);
 			break;
 		case CUT_VOL_REQ:
+			new = calloc(1, sizeof(cut_vol_req_t));
+			*len = sizeof(cut_vol_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, add_vol_req_template);
 			break;
 		case TRADE_QRY_REQ:
+			new = calloc(1, sizeof(trade_qry_req_t));
+			*len = sizeof(trade_qry_req_t);
+			__resolve_msg((char *)new + sizeof(msg_head_t), body, trade_qry_req_template);
 			break;
 		default:
 			printf("ERROR: [%s][%d] unkown message type [%lld].\n", __FL__, type);
@@ -222,27 +317,59 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 		break;
 	case BIZ_OVER_RSP:
 		printf("TRACE: [%s][%d] package 'biz over rsp' body.\n", __FL__);
+		msg = calloc(1, BIZ_OVER_RSP_BODY_LEN + 1);
+		*len = BIZ_OVER_RSP_BODY_LEN;
+		memset(msg, 0x20, BIZ_OVER_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, biz_over_rsp_template);
 		break;
 	case LOGOUT_RSP:
 		printf("TRACE: [%s][%d] package 'logout rsp' body.\n", __FL__);
+		msg = calloc(1, LOGOUT_RSP_BODY_LEN + 1);
+		*len = LOGOUT_RSP_BODY_LEN;
+		memset(msg, 0x20, LOGOUT_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, logout_rsp_template);
 		break;
 	case PING_REQ:
 		printf("TRACE: [%s][%d] package 'ping req' body.\n", __FL__);
+		msg = calloc(1,PING_REQ_BODY_LEN + 1);
+		*len = PING_REQ_BODY_LEN;
+		memset(msg, 0x20, PING_REQ_BODY_LEN);
+		__package_msg(h + 1, msg, ping_req_template);		
 		break;
 	case PING_RSP:
 		printf("TRACE: [%s][%d] package 'ping rsp' body.\n", __FL__);
+		msg = calloc(1, PING_RSP_BODY_LEN + 1);
+		*len = PING_RSP_BODY_LEN;
+		memset(msg, 0x20,PING_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, ping_rsp_template);		
 		break;
 	case ADD_VOL_RSP:
 		printf("TRACE: [%s][%d] package 'add vol rsp' body.\n", __FL__);
+		msg = calloc(1, ADD_VOL_RSP_BODY_LEN + 1);
+		*len = ADD_VOL_RSP_BODY_LEN;
+		memset(msg, 0x20, ADD_VOL_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, add_vol_rsp_template);		
 		break;
 	case CUT_VOL_RSP:
 		printf("TRACE: [%s][%d] package 'cut vol rsp' body.\n", __FL__);
+		msg = calloc(1, CUT_VOL_RSP_BODY_LEN + 1);
+		*len = CUT_VOL_RSP_BODY_LEN;
+		memset(msg, 0x20, CUT_VOL_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, cut_vol_rsp_template);		
 		break;
 	case TRADE_QRY_RSP:
 		printf("TRACE: [%s][%d] package 'qry rsp' body.\n", __FL__);
+		msg = calloc(1,TRADE_QRY_RSP_BODY_LEN + 1);
+		*len = TRADE_QRY_RSP_BODY_LEN;
+		memset(msg, 0x20, TRADE_QRY_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, trade_qry_rsp_template);		
 		break;
 	default:
 		printf("ERROR: [%s][%d] package msg error trade type [%lld].\n", __FL__, type);
+		msg = calloc(1, LOGIN_RSP_BODY_LEN + 1);
+		*len = LOGIN_RSP_BODY_LEN;
+		memset(msg, 0x20, LOGIN_RSP_BODY_LEN);
+		__package_msg(h + 1, msg, login_rsp_template);	
 		return NULL;
 	}
 

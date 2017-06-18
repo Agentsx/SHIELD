@@ -57,60 +57,99 @@ typedef struct login_rsp_s {
 	char       description[24];
 	char       connection_type[8];
 } login_rsp_t;
+typedef struct biz_over_req_s {
+	msg_head_t msg_head;
+	char 		biz_code[8];
+	long long	total_records;
+	char		tran_status[8];
+
+} biz_over_req_t;
+
 
 typedef struct biz_over_rsp_s {
 	msg_head_t msg_head;
-	char 		bizCode[3];
-	long long	totalRecords;
-	char		tranStatus;
+	char 		biz_code[8];
+	long long	total_records;
+	char		tran_status[8];
 
 } biz_over_rsp_t;
+
+typedef struct logout_req_s {
+	msg_head_t msg_head;
+	char 		code[8];
+	char 		description[64];
+} logout_req_t;
+
 typedef struct logout_rsp_s {
 	msg_head_t msg_head;
 } logout_rsp_t;
 
 typedef struct ping_req_s {
 	msg_head_t msg_head;
-	char 		dateTime[16];
+	char 		date_time[16];
 	char		description[8];
 } ping_req_t;
 
 typedef struct ping_rsp_s {
 	msg_head_t msg_head;
-	char 		dateTime[16];
+	char 		date_time[16];
 	char		description[8];
 } ping_rsp_t;
 
+typedef struct add_vol_req_s{
+	msg_head_t msg_head;
+	char		instruction_id[16];
+	char		instrument_id[8];
+	char		account_id[16];
+	char		PBU[8];
+	long long	quantity[16];
+
+}add_vol_req_t;
+
 typedef struct add_vol_rsp_s{
 	msg_head_t msg_head;
-	char	processingResult[5];
-	char	description[40];
-	char	orgInstructionId[16];
-	char	instrumentId[6];
-	char	accountId[10];
-	char	PBU[6];
-	char	quantity[16];
+	char		processing_result[8];
+	char		description[40];
+	char		org_instruction_id[16];
+	char		instrument_id[8];
+	char		account_id[16];
+	char		PBU[8];
+	long long	quantity[16];
 
 }add_vol_rsp_t;
 
+typedef struct cut_vol_req_s{
+	msg_head_t msg_head;
+	char		instruction_id[16];
+	char		instrument_id[8];
+	char		account_id[16];
+	char		PBU[8];
+	long long	quantity[16];
+
+}cut_vol_req_t;
+
 typedef struct cut_vol_rsp_s{
 	msg_head_t msg_head;
-	char	processingResult[5];
-	char	description[40];
-	char	orgInstructionId[16];
-	char	instrumentId[6];
-	char	accountId[10];
-	char	PBU[6];
-	char	quantity[16];
+	char		processing_result[8];
+	char		description[40];
+	char		org_instruction_id[16];
+	char		instrument_id[8];
+	char		account_id[16];
+	char		PBU[8];
+	long long 	quantity[16];
 
 }cut_vol_rsp_t;
+typedef struct trade_qry_req_s{
+	msg_head_t msg_head;
+	char	org_instruction_id[16];
+}trade_qry_req_t;
 
 typedef struct trade_qry_rsp_s{
 	msg_head_t msg_head;
-	char	processingResult[5];
-	char	orgInstructionId[16];
-	char	orgProcessingResult[5];
-	char 	orgDescription[40];
+	char	processing_result[8];
+	char	org_instruction_id[16];
+	char	org_processing_result[8];
+	char 	org_description[40];
 }trade_qry_rsp_t;
 
 #endif
