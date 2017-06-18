@@ -3,6 +3,11 @@
 
 #include "db/sqlite3/sqlite3.h"
 #include "frame/frame.h"
+#include "utils/hash.h"
+#include "tbl.h"
+
+#define USER_OK      1
+#define USER_NOT_OK  0
 
 #define CALLOC_MSG(s, ifd, type) \
 	shield_head *__##s = calloc(1, sizeof(shield_head) + sizeof(s##_t)); \
@@ -18,10 +23,11 @@
 extern handler_map_t g_hp[];
 
 typedef struct core_data_s {
-	char trade_date[16];
-	int  recv_trans_no;
-	int  send_trans_no;
-	sqlite3 *db_conn;
+	char       trade_date[16];
+	long long  recv_trans_no;
+	long long  send_trans_no;
+	sqlite3    *db_conn;
+    hash_t     *trade_list;
 } core_data_t;
 
 extern core_data_t *g_core_data;

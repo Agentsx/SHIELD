@@ -1,8 +1,21 @@
 #ifndef __TRADE_MSG_H_
 #define __TRADE_MSG_H_
 
-#define  LOGOUT_RSP_LEN      243
-#define  LOGOUT_RSP_BODY_LEN 63
+#define  LOGIN_RSP_LEN      243
+#define  LOGIN_RSP_BODY_LEN 63
+
+#define  LOGOUT_RSP_LEN      180
+#define  LOGOUT_RSP_BODY_LEN 0
+
+#define  TRADE_RSP_LEN      234
+#define  TRADE_RSP_BODY_LEN 54
+
+#define  ADDVOL_RSP_LEN      234
+#define  ADDVOL_RSP_BODY_LEN 54
+
+#define  CUTVOL_RSP_LEN      234
+#define  CUTVOL_RSP_BODY_LEN 54
+
 
 #define  NONFIX 0
 #define  FIX    1

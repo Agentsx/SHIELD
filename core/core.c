@@ -24,5 +24,16 @@ int core_init()
 		return -1;
 	}
 
+    g_core_data->trade_list = hash_init(STR, POINTER);
+    if (get_trade_list(g_core_data->db_conn, g_core_data->trade_list, g_core_data->trade_date)) {
+        printf("ERROR: [%s][%d] get trade list error.\n", __FL__); 
+        return -1;
+    }
+
+    if (get_max_recv_no(g_core_data->db_conn, g_core_data->trade_date, &g_core_data->recv_trans_no)) {
+		printf("ERROR: [%s][%d] get max recv no error.\n", __FL__);	
+		return -1;
+    }
+
 	return 0;
 }

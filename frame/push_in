@@ -1,6 +1,0 @@
-handler.c:	middle->handle_in = fin;
-handler.c:	middle->handle_out = fout;
-handler.c:	middle->push_in = middle_push_in;
-handler.c:	middle->push_out = middle_push_out;
-thread.c:            ret = g_svr->middle->handle_in(head);
-thread.c:            ret = g_svr->middle->handle_out(head);
