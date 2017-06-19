@@ -46,22 +46,6 @@ static int __auth_check(const char *user_name, const char *password)
 	return 0;
 }
 
-static int __package_login_rsp_head(msg_head_t *h)
-{
-	h->msg_len = LOGOUT_RSP_LEN; 
-	h->fix_length = NONFIX; 
-	h->rec_length = LOGOUT_RSP_BODY_LEN; 
-	h->rec_no = 1; 
-	strncpy(h->msg_type, S202, sizeof(h->msg_type));
-	h->trans_no = 0; 
-	h->signature_flag = NONSIGNATURED; 
-	h->encrypted = NONENCRYTED; 
-	h->resend_flag = 0; 
-	strncpy(h->reserved, "123", sizeof(h->reserved)); 
-	strncpy(h->signature_data, "123", sizeof(h->signature_data)); 
-	return 0;
-}
-
 static int __trade_date_check(const char *date)
 {
     return strcmp(date, g_core_data->trade_date);
@@ -83,13 +67,13 @@ static int __login_check(login_req_t *login_req)
     return 0;
 }
 
-static int __package_trade_rsp_head(msg_head_t *h)
+static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int body_len)
 {
-	h->msg_len = TRADE_RSP_LEN; 
+	h->msg_len = msg_len; 
 	h->fix_length = NONFIX; 
-	h->rec_length = TRADE_RSP_BODY_LEN; 
+	h->rec_length = body_len; 
 	h->rec_no = 1;
-	strncpy(h->msg_type, S202, sizeof(h->msg_type));
+	strncpy(h->msg_type, type, sizeof(h->msg_type));
 	h->trans_no = 0;
 	h->signature_flag = NONSIGNATURED;
 	h->encrypted = NONENCRYTED;
@@ -99,14 +83,36 @@ static int __package_trade_rsp_head(msg_head_t *h)
 	return 0;
 }
 
+#define STRNCPY(a, b) strncpy(a, b, sizeof(a))
+
+#define __package_trade_rsp_body(rsp, trade_info) \
+    do { \
+        STRNCPY(rsp->processing_result, trade_info->result_code); \
+        STRNCPY(rsp->description, trade_info->result_desc); \
+        STRNCPY(rsp->org_instruction_id, trade_info->sge_instruc); \
+        STRNCPY(rsp->instrument_id, trade_info->etf_code); \
+        STRNCPY(rsp->account_id, trade_info->client_acc); \
+        STRNCPY(rsp->PBU, trade_info->pbu); \
+        rsp->quantity = trade_info->quantity; \
+    } while (0);
+
 static int __send_rsp(shield_head *h, tbl_trade_info_t *trade_info)
 {
     switch (trade_info->msg_type) {
 	case ADD_VOL_RSP: {
             CALLOC_MSG(add_vol_rsp, h->fd, trade_info->msg_type);
+            __package_rsp_head(&add_vol_rsp->msg_head, A302, ADDVOL_RSP_LEN, ADDVOL_RSP_BODY_LEN);
+            __package_trade_rsp_body(add_vol_rsp, trade_info);
+            add_vol_rsp->quantity = trade_info->quantity;
+
+	        PUSH_MSG(add_vol_rsp);
         }
 	case CUT_VOL_RSP: {
             CALLOC_MSG(cut_vol_rsp, h->fd, trade_info->msg_type);
+            __package_rsp_head(&cut_vol_rsp->msg_head, A304, CUTVOL_RSP_LEN, CUTVOL_RSP_BODY_LEN);
+            __package_trade_rsp_body(cut_vol_rsp, trade_info);
+
+	        PUSH_MSG(cut_vol_rsp);
         }
     }
     return 0;
@@ -158,7 +164,7 @@ AFTER:
     {
 	CALLOC_MSG(login_rsp, h->fd, LOGIN_RSP);
 
-	__package_login_rsp_head(&login_rsp->msg_head);
+	__package_rsp_head(&login_rsp->msg_head, S202, LOGIN_RSP_LEN, LOGIN_RSP_BODY_LEN);
 
 	login_rsp->result[0] = result_code;
 	login_rsp->heart_bt_int = 0;
