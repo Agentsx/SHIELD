@@ -49,6 +49,7 @@ int db_exec_dml(sqlite3 *conn, const char *sql, char **err_msg)
 	return sqlite3_exec(conn, sql, NULL, NULL, err_msg) == SQLITE_OK ? 0 : -1;
 }
 
+/*
 int main()
 {
 	int ret;
@@ -91,3 +92,4 @@ int main()
 
 	return ret;
 }
+*/

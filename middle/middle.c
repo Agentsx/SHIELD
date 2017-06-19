@@ -111,6 +111,7 @@ template_t trade_qry_req_template[] = {
 	{16, 'S', 16},
 	{-1, -1, -1}
 };
+
 template_t trade_qry_rsp_template[] = {
 	{8, 'S', 16},
 	{16, 'S', 16},
@@ -326,7 +327,7 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 		printf("TRACE: [%s][%d] package 'logout rsp' body.\n", __FL__);
 		msg = calloc(1, LOGOUT_RSP_BODY_LEN + 1);
 		*len = LOGOUT_RSP_BODY_LEN;
-		memset(msg, 0x20, LOGOUT_RSP_BODY_LEN);
+		// memset(msg, 0x20, LOGOUT_RSP_BODY_LEN);
 		__package_msg(h + 1, msg, logout_rsp_template);
 		break;
 	case PING_REQ:

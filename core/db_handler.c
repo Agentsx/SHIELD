@@ -128,7 +128,7 @@ ERROR:
     return -1;
 }
 
-int get_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_recv_no, array_t *a)
+int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_recv_no, array_t *a)
 {
     char *temp = "select * from t_trade_info where f_trans_no > %lld and f_recv_type = %d;";
     char sql[256];

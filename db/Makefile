@@ -1,18 +1,15 @@
-OBJS = tables_init.o
-CC = gcc
-LFLAGS = -Wall -g
-LIBS = -L./libs -lsqlite3
-EXE = tables_init
+include ../Makefile.bas
 
+LIB_TARG = libdb.a
+LIB_OBJS = db.o
 
-$(EXE): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(EXE) $(LIBS)
+$(LIB_TARG): $(LIB_OBJS)
+	$(AR) $(ARPARAM) $@ $(LIB_OBJS)
 
-$(OBJS) : tables_init.c
+.c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
-
 
 .PHONY: clean
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(LIB_OBJS) $(LIB_TARG)
