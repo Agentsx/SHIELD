@@ -4,7 +4,7 @@
 #include "db/sqlite3/sqlite3.h"
 #include "frame/frame.h"
 #include "utils/hash.h"
-#include "tbl.h"
+#include "include/tbl.h"
 
 #define USER_OK      1
 #define USER_NOT_OK  0

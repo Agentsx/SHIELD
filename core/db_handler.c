@@ -1,7 +1,7 @@
 #include "db/db.h"
 #include "db_handler.h"
 #include "frame/frame.h"
-#include "tbl.h"
+#include "include/tbl.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -3,7 +3,7 @@
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "err.h"
-#include "tbl.h"
+#include "include/tbl.h"
 #include "utils/array.h"
 #include "db_handler.h"
 #include <stdio.h>
@@ -85,7 +85,9 @@ static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int 
 
 #define STRNCPY(a, b) strncpy(a, b, sizeof(a))
 
-#define __package_trade_rsp_body(rsp, trade_info) \
+static int __send_rsp(shield_head *h, const tbl_trade_info_t *trade_info)
+{
+#define __package_trade_rsp_body(rsp) \
     do { \
         STRNCPY(rsp->processing_result, trade_info->result_code); \
         STRNCPY(rsp->description, trade_info->result_desc); \
@@ -94,23 +96,20 @@ static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int 
         STRNCPY(rsp->account_id, trade_info->client_acc); \
         STRNCPY(rsp->PBU, trade_info->pbu); \
         rsp->quantity = trade_info->quantity; \
-    } while (0);
+    } while (0)
 
-static int __send_rsp(shield_head *h, tbl_trade_info_t *trade_info)
-{
     switch (trade_info->msg_type) {
 	case ADD_VOL_RSP: {
             CALLOC_MSG(add_vol_rsp, h->fd, trade_info->msg_type);
             __package_rsp_head(&add_vol_rsp->msg_head, A302, ADDVOL_RSP_LEN, ADDVOL_RSP_BODY_LEN);
-            __package_trade_rsp_body(add_vol_rsp, trade_info);
-            add_vol_rsp->quantity = trade_info->quantity;
+            __package_trade_rsp_body(add_vol_rsp);
 
 	        PUSH_MSG(add_vol_rsp);
         }
 	case CUT_VOL_RSP: {
             CALLOC_MSG(cut_vol_rsp, h->fd, trade_info->msg_type);
             __package_rsp_head(&cut_vol_rsp->msg_head, A304, CUTVOL_RSP_LEN, CUTVOL_RSP_BODY_LEN);
-            __package_trade_rsp_body(cut_vol_rsp, trade_info);
+            __package_trade_rsp_body(cut_vol_rsp);
 
 	        PUSH_MSG(cut_vol_rsp);
         }
