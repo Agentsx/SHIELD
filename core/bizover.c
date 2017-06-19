@@ -33,9 +33,7 @@ int  biz_over_req_handler(shield_head *h)
 	__package_head(&biz_over_rsp->msg_head);
 	
 	printf("TRACE: [%s][%d]biz over head package ok.\n", __FL__);
-	strncpy(biz_over_rsp->bizCode, "001", sizeof(biz_over_rsp->bizCode));
-	biz_over_rsp->totalRecords=10000;//当日申购赎回笔数
-	biz_over_rsp->tranStatus='0';	
+	
 	printf("TRACE: [%s][%d] biz over body package ok.\n", __FL__);
 	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(biz_over_rsp);
