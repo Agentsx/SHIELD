@@ -25,7 +25,7 @@ static int __package_ping_head(msg_head_t *h, const char *type, int msg_len, int
 }
 
 
-int ping_req_handler(shield_head *h)
+int ping_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
 
@@ -55,7 +55,7 @@ int ping_req_handler(shield_head *h)
 	return 0;
 }
 
-int ping_rsp_handler(shield_head *h)
+int ping_rsp_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
 

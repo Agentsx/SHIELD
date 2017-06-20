@@ -21,7 +21,7 @@ static int __package_head(msg_head_t *h)
 	return 0;
 }
 
-int add_vol_req_handler(shield_head *h)
+int add_vol_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] add vol handler called.\n", __FL__);
 		

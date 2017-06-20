@@ -22,7 +22,7 @@ static int __package_head(msg_head_t *h)
 	return 0;
 }
 
-int  biz_over_req_handler(shield_head *h)
+int  biz_over_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] biz over req handler called.\n", __FL__);
 	

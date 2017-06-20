@@ -30,8 +30,7 @@ int server_init(char *cfg_file)
 	}
 
     char *s = NULL;
-
-    if (map_get(g_svr->cfg, "listen_port", &s)) {
+    if (map_get(g_svr->cfg, "listen_port", (void *)&s)) {
 		printf("ERROR: [%s][%d] get listen port error.\n", __FL__);
 		return -1;
     }

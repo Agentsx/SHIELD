@@ -1,5 +1,5 @@
 ROOTPATH = /home/userx/SHIELD
-CFLAGS = -Wall -g 
+CFLAGS = -Wall -g
 CC = gcc
 INCLUDE = -I$(ROOTPATH)
 AR = ar

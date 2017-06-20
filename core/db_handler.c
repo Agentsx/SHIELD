@@ -10,7 +10,7 @@
 int db_conn_init(sqlite3 **conn)
 {
     char *s = NULL;
-    if (map_get(g_svr->cfg, "db_name", &s)) {
+    if (map_get(g_svr->cfg, "db_name", (void *)&s)) {
         printf("ERROR: [%s][%d] get db name from cfg error.\n", __FL__); 
         return -1;
     }

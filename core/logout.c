@@ -21,7 +21,7 @@ static int __package_head(msg_head_t *h)
 	return 0;
 }
 
-int logout_req_handler(shield_head *h)
+int logout_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] login req handler called.\n", __FL__);
 	

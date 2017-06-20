@@ -22,7 +22,7 @@ static int __package_head(msg_head_t *h)
 }
 
 
-int  trade_qry_req_handler(shield_head *h)
+int  trade_qry_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] trade qry handler called.\n", __FL__);
 		

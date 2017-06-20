@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	g_svr->core_handler_init(g_svr->core, g_hp);
-	g_svr->middle_handler_init(g_svr->middle, resolve_msg, package_msg);
-	g_svr->persistent_handler_init(g_svr->persistent, NULL);
+	g_svr->set_core(g_svr->core, g_hp);
+	g_svr->set_middle(g_svr->middle, resolve_msg, package_msg);
+	g_svr->set_persistent(g_svr->persistent, NULL);
 
 	server_set_core_init(core_init);
 

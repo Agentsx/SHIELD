@@ -10,5 +10,6 @@ $(LIB_TARG): $(LIB_OBJS)
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
+.PHONY: clean
 clean:
 	rm -f $(LIB_OBJS) $(LIB_TARG)

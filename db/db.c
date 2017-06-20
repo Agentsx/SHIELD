@@ -1,10 +1,10 @@
 #include "db.h"
-#include "utils/hash.h"
+#include "utils/map.h"
 #include <stdio.h>
 
 static int __callback(void *a, int argc, char **argv, char **col_name){
     array_t *p = (array_t *)a;
-    hash_t  *h = hash_init(STR, STR);
+    map_t  *h = map_init(STR, STR);
     if (h == NULL) {
         return -1;
     }
@@ -12,7 +12,7 @@ static int __callback(void *a, int argc, char **argv, char **col_name){
     int i;
     for (i = 0; i < argc; i++) {
         printf("%s = %s\n", col_name[i], argv[i] ? argv[i] : "NULL");
-        hash_put(h, col_name[i], argv[i] ? argv[i] : "");
+        map_put(h, col_name[i], argv[i] ? argv[i] : "");
     }
     array_insert(p, (void *)h);
     printf("--\n");
@@ -64,7 +64,7 @@ int main()
     char *sql = "select * from tbl1;";
     char *err_msg = NULL;
 
-    array_t *a = array_init((array_item_destroy)hash_destroy);
+    array_t *a = array_init((array_item_destroy)map_destroy);
    
     ret = db_exec_dql(conn, sql, &err_msg, a);
     if (ret == SQLITE_OK) {
@@ -72,13 +72,13 @@ int main()
         int i;
         char *val;
         for (i = 0; i < array_count(a); ++i) {
-            hash_t *p = (hash_t *)array_get(a, i); 
+            map_t *p = (map_t *)array_get(a, i); 
 
-            ret = hash_get(p, "one", (void **)&val);
+            ret = map_get(p, "one", (void **)&val);
             if (!ret) {
                 printf("%s--%s\n", "one", val); 
             }
-            ret = hash_get(p, "two", (void *)&val);
+            ret = map_get(p, "two", (void *)&val);
             if (!ret) {
                 printf("%s--%s\n", "two", val); 
             }

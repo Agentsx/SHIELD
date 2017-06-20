@@ -52,16 +52,11 @@ int init_net(int port)
 		goto error;
     }
 
-	if (g_svr->cfg->listen_port < 1024) {
-		printf("ERROR: [%s][%d] listen port [%d] error.\n", __FL__, g_svr->cfg->listen_port);	
-		goto error;
-	}
-
     struct sockaddr_in svraddr;
 
     svraddr.sin_family = AF_INET;
     svraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    svraddr.sin_port = htons(g_svr->cfg->listen_port);
+    svraddr.sin_port = htons(port);
     if (bind(sockfd, (struct sockaddr *)&svraddr, sizeof(svraddr)) == -1) {
         printf("[%s][%d] bind socket error\n", __FL__);
 		goto error;

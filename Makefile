@@ -2,6 +2,7 @@ include Makefile.bas
 
 SVR_NAME = shield
 OBJS = shield.o
+
 all: libs $(SVR_NAME)
 
 LIBS = -L$(ROOTPATH)/frame -lframe \
@@ -10,7 +11,10 @@ LIBS = -L$(ROOTPATH)/frame -lframe \
        -L$(ROOTPATH)/utils -lutils \
        -L$(ROOTPATH)/db -ldb \
        -L$(ROOTPATH)/libs -lsqlite3 \
+       -L$(ROOTPATH)/libs -lparson \
        -lpthread
+
+.PHONY: libs clean
 
 libs:
 	@make -C frame
@@ -31,4 +35,4 @@ clean:
 	@make -C middle clean
 	@make -C core   clean
 	@make -C utils  clean
-	@make -C db  clean
+	@make -C db     clean

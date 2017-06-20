@@ -85,7 +85,7 @@ static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int 
 
 #define STRNCPY(a, b) strncpy(a, b, sizeof(a))
 
-static int __send_rsp(shield_head *h, const tbl_trade_info_t *trade_info)
+static int __send_rsp(shield_head_t *h, const tbl_trade_info_t *trade_info)
 {
 #define __package_trade_rsp_body(rsp) \
     do { \
@@ -117,7 +117,7 @@ static int __send_rsp(shield_head *h, const tbl_trade_info_t *trade_info)
     return 0;
 }
 
-static int __trans_no_handler(shield_head *h, long long begin_trans_no)
+static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
 {
     if (begin_trans_no > 0 && begin_trans_no < g_core_data->recv_trans_no) {
         int ret;
@@ -141,7 +141,7 @@ static int __trans_no_handler(shield_head *h, long long begin_trans_no)
     return 0;
 }
 
-int login_req_handler(shield_head *h)
+int login_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] login req handler called.\n", __FL__);
 

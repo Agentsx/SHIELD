@@ -21,7 +21,7 @@ static int __package_head(msg_head_t *h)
 	return 0;
 }
 
-int cut_vol_req_handler(shield_head *h)
+int cut_vol_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] cut vol handler called.\n", __FL__);
 		

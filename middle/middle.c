@@ -222,7 +222,7 @@ static void *__resolve_body(long long type, const char *body, size_t *len)
 	return new;
 }
 
-int resolve_msg(shield_head *head)
+int resolve_msg(shield_head_t *head)
 {
 	char *msg = (char *)(head + 1);
 	msg_head_t *h = __resolve_head(msg);
@@ -248,7 +248,7 @@ int resolve_msg(shield_head *head)
 
 	memcpy(b, h, sizeof(msg_head_t));
 
-	shield_head *newh = calloc(1, sizeof(shield_head) + len);
+	shield_head_t *newh = calloc(1, sizeof(shield_head_t) + len);
 	newh->fd = head->fd;
 	newh->magic_num = head->magic_num;
 	newh->len = len;
@@ -377,7 +377,7 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 	return msg;
 }
 
-int package_msg(shield_head *head)
+int package_msg(shield_head_t *head)
 {
 	printf("TRACE: [%s][%d] middle package msg been called.\n", __FL__);
 
@@ -391,7 +391,7 @@ int package_msg(shield_head *head)
 		return -1;
 	}
 
-	shield_head *out = calloc(1, sizeof(shield_head) + MSG_HEAD_LEN + len);
+	shield_head_t *out = calloc(1, sizeof(shield_head_t) + MSG_HEAD_LEN + len);
 	out->magic_num = head->magic_num;
 	out->fd = head->fd;
 	out->trade_type = head->trade_type;

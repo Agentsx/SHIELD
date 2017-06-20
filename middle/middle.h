@@ -41,7 +41,7 @@ typedef struct template_s {
 
 
 
-extern int resolve_msg(shield_head *head);
-extern int package_msg(shield_head *head);
+extern int resolve_msg(shield_head_t *head);
+extern int package_msg(shield_head_t *head);
 
 #endif
