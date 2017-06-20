@@ -9,7 +9,7 @@ LIBS = -L$(ROOTPATH)/frame -lframe \
        -L$(ROOTPATH)/core -lcore \
        -L$(ROOTPATH)/utils -lutils \
        -L$(ROOTPATH)/db -ldb \
-       -L$(ROOTPATH)/db/libs -lsqlite3 \
+       -L$(ROOTPATH)/libs -lsqlite3 \
        -lpthread
 
 libs:

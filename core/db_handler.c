@@ -9,14 +9,19 @@
 
 int db_conn_init(sqlite3 **conn)
 {
-	return db_init(DB_NAME, conn);
+    char *s = NULL;
+    if (map_get(g_svr->cfg, "db_name", &s)) {
+        printf("ERROR: [%s][%d] get db name from cfg error.\n", __FL__); 
+        return -1;
+    }
+	return db_init(s, conn);
 }
 
 int get_trade_date(sqlite3 *conn, char *date)
 {
 	char *sql = "select max(f_trade_date) from t_trade_date;";
 
-	array_t *a = array_init((array_item_destroy)hash_destroy);
+	array_t *a = array_init((array_item_destroy)map_destroy);
 
 	int ret = 0;
 	char *err_msg = NULL;
@@ -28,12 +33,12 @@ int get_trade_date(sqlite3 *conn, char *date)
 	if (array_count(a) == 0)
 		goto ERROR;
 
-	hash_t *h = (hash_t *)array_get(a, 0);
+	map_t *h = (map_t *)array_get(a, 0);
 	if (h == NULL)
 		goto ERROR;
 
 	char *trade_date = NULL;
-	ret = hash_get(h, "f_trade_date", (void **)&trade_date);
+	ret = map_get(h, "f_trade_date", (void **)&trade_date);
 	if (ret != 0 || trade_date == NULL)
 		goto ERROR;
 
@@ -53,7 +58,7 @@ int get_user(sqlite3 *conn, const char *name, tbl_user_t *user)
     char sql[256];
     snprintf(sql, sizeof(sql), temp, name);
 
-	array_t *a = array_init((array_item_destroy)hash_destroy);
+	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
@@ -64,22 +69,22 @@ int get_user(sqlite3 *conn, const char *name, tbl_user_t *user)
 	if (array_count(a) == 0)
 		goto ERROR;
 
-	hash_t *h = (hash_t *)array_get(a, 0);
+	map_t *h = (map_t *)array_get(a, 0);
 	if (h == NULL)
 		goto ERROR;
 
     char *tmp = NULL;
-    ret = hash_get(h, "f_user_name", (void **)&tmp);
+    ret = map_get(h, "f_user_name", (void **)&tmp);
     if (ret)
         goto ERROR;
     strncpy(user->name, tmp, sizeof(user->name));
 
-    ret = hash_get(h, "f_password", (void **)&tmp);
+    ret = map_get(h, "f_password", (void **)&tmp);
     if (ret)
         goto ERROR;
     strncpy(user->password, tmp, sizeof(user->password));
 
-    ret = hash_get(h, "f_status", (void **)&tmp);
+    ret = map_get(h, "f_status", (void **)&tmp);
     if (ret)
         goto ERROR;
     user->status = atoi(tmp);
@@ -99,7 +104,7 @@ int get_max_recv_no(sqlite3 *conn, const char *trade_date, long long *max_recv_n
     char sql[256];
     snprintf(sql, sizeof(sql), temp, trade_date, RECV);
 
-	array_t *a = array_init((array_item_destroy)hash_destroy);
+	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
@@ -110,12 +115,12 @@ int get_max_recv_no(sqlite3 *conn, const char *trade_date, long long *max_recv_n
 	if (array_count(a) == 0)
 		goto ERROR;
 
-	hash_t *h = (hash_t *)array_get(a, 0);
+	map_t *h = (map_t *)array_get(a, 0);
 	if (h == NULL)
 		goto ERROR;
 
     char *tmp = NULL;
-    ret = hash_get(h, "f_trans_no", (void **)&tmp);
+    ret = map_get(h, "f_trans_no", (void **)&tmp);
     if (ret)
         goto ERROR;
 
@@ -134,7 +139,7 @@ int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_rec
     char sql[256];
     snprintf(sql, sizeof(sql), temp, begin_recv_no, SEND);
 
-	array_t *ia = array_init((array_item_destroy)hash_destroy);
+	array_t *ia = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, ia);
@@ -146,33 +151,33 @@ int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_rec
 		goto ERROR;
 
     int i;
-    hash_t *h = NULL;
+    map_t *h = NULL;
     tbl_trade_info_t  *trade_info = NULL;
     char *tmp = NULL;
     for (i = 0; i < array_count(a); ++i) {
-	    h = (hash_t *)array_get(ia, i);
+	    h = (map_t *)array_get(ia, i);
         trade_info = calloc(1, sizeof(tbl_trade_info_t));
-        hash_get(h, "f_trade_date", (void **)&tmp);
+        map_get(h, "f_trade_date", (void **)&tmp);
         strncpy(trade_info->trade_date, tmp, sizeof(trade_info->trade_date));
-        hash_get(h, "f_sge_instruc", (void **)&tmp);
+        map_get(h, "f_sge_instruc", (void **)&tmp);
         strncpy(trade_info->sge_instruc, tmp, sizeof(trade_info->sge_instruc));
-        hash_get(h, "f_recv_type", (void **)&tmp);
+        map_get(h, "f_recv_type", (void **)&tmp);
         trade_info->recv_type = atoi(tmp);
-        hash_get(h, "f_trans_no", (void **)&tmp);
+        map_get(h, "f_trans_no", (void **)&tmp);
         trade_info->trans_no = atol(tmp);
-        hash_get(h, "f_msg_type", (void **)&tmp);
+        map_get(h, "f_msg_type", (void **)&tmp);
         trade_info->msg_type = atoi(tmp);
-        hash_get(h, "f_etf_code", (void **)&tmp);
+        map_get(h, "f_etf_code", (void **)&tmp);
         strncpy(trade_info->etf_code, tmp, sizeof(trade_info->etf_code));
-        hash_get(h, "f_client_acc", (void **)&tmp);
+        map_get(h, "f_client_acc", (void **)&tmp);
         strncpy(trade_info->client_acc, tmp, sizeof(trade_info->client_acc));
-        hash_get(h, "f_pbu", (void **)&tmp);
+        map_get(h, "f_pbu", (void **)&tmp);
         strncpy(trade_info->pbu, tmp, sizeof(trade_info->pbu));
-        hash_get(h, "f_quantity", (void **)&tmp);
+        map_get(h, "f_quantity", (void **)&tmp);
         trade_info->quantity = atol(tmp);
-        hash_get(h, "f_result_code", (void **)&tmp);
+        map_get(h, "f_result_code", (void **)&tmp);
         strncpy(trade_info->result_code, tmp, sizeof(trade_info->result_code));
-        hash_get(h, "f_result_desc", (void **)&tmp);
+        map_get(h, "f_result_desc", (void **)&tmp);
         strncpy(trade_info->result_desc, tmp, sizeof(trade_info->result_desc));
         array_insert(a, (void *)trade_info);
     }
@@ -185,13 +190,13 @@ ERROR:
     return -1;
 }
 
-int get_trade_list(sqlite3 *conn, hash_t *h, const char *trade_date)
+int get_trade_list(sqlite3 *conn, map_t *h, const char *trade_date)
 {
     char *temp = "select * from t_trade_list where f_trade_date = '%s';";
     char sql[256];
     snprintf(sql, sizeof(sql), temp, trade_date);
 
-	array_t *a = array_init((array_item_destroy)hash_destroy);
+	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
@@ -203,19 +208,19 @@ int get_trade_list(sqlite3 *conn, hash_t *h, const char *trade_date)
 		goto ERROR;
 
     int i;
-    hash_t *ih = NULL;
+    map_t *ih = NULL;
     char *tmp = NULL;
     tbl_trade_list_t  *tl = NULL;
     for (i = 0; i < array_count(a); ++i) {
         tl = calloc(1, sizeof(tbl_trade_list_t));
         ih = array_get(a, i);
-        hash_get(ih, "f_etf_code", (void **)&tmp);
+        map_get(ih, "f_etf_code", (void **)&tmp);
         strncpy(tl->etf_code, tmp, sizeof(tl->etf_code));
-        hash_get(ih, "f_apply_limit", (void **)&tmp);
+        map_get(ih, "f_apply_limit", (void **)&tmp);
         tl->apply_limit = atol(tmp);
-        hash_get(ih, "f_redemption_limit", (void **)&tmp);
+        map_get(ih, "f_redemption_limit", (void **)&tmp);
         tl->redemption_limit = atol(tmp);
-        hash_put(h, tl->etf_code, tl);
+        map_put(h, tl->etf_code, tl);
     }
 
     array_destroy(a);

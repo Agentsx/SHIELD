@@ -1,4 +1,4 @@
-#include "hash.h"
+#include "map.h"
 #include <string.h>
 
 static int __int_match(const void *a, const void *b)
@@ -52,25 +52,25 @@ static int __table_size_for(int cap) {
     return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
 }
 
-void __hash_pair_destroy(hash_pair_t *p)
+void __map_pair_destroy(map_pair_t *p)
 {
     free(p->key);
     free(p->val);
     free(p);
 }
 
-static void __list_destroy(hash_pair_t *l)
+static void __list_destroy(map_pair_t *l)
 {
-    hash_pair_t *p1, *p2;
+    map_pair_t *p1, *p2;
     p1 = l;
     while (p1) {
         p2 = p1->next;
-        __hash_pair_destroy(p1);
+        __map_pair_destroy(p1);
         p1 = p2; 
     }
 }
 
-static void __buckets_destroy(hash_pair_t **b, size_t thr)
+static void __buckets_destroy(map_pair_t **b, size_t thr)
 {
 	size_t i;
 
@@ -82,9 +82,9 @@ static void __buckets_destroy(hash_pair_t **b, size_t thr)
     free(b);
 }
 
-hash_pair_t *__find(void *key, hash_pair_t *head, int (*match)(const void *a, const void *b))
+map_pair_t *__find(void *key, map_pair_t *head, int (*match)(const void *a, const void *b))
 {
-    hash_pair_t *p = head;
+    map_pair_t *p = head;
     while (p) {
         if (match(key, p->key))
             return p;
@@ -93,27 +93,27 @@ hash_pair_t *__find(void *key, hash_pair_t *head, int (*match)(const void *a, co
     return NULL;
 }
 
-static void __resize(hash_t *h)
+static void __resize(map_t *m)
 {
-    if (h->threshold >= MAXIMUM_CAPACITY)
+    if (m->threshold >= MAXIMUM_CAPACITY)
         return;
 
-    size_t old_threshold = h->threshold;
-    size_t new_threshold = h->threshold << 1;
+    size_t old_threshold = m->threshold;
+    size_t new_threshold = m->threshold << 1;
 
-    hash_pair_t **new_buckets = (hash_pair_t **)calloc(new_threshold, sizeof(hash_pair_t *));
+    map_pair_t **new_buckets = (map_pair_t **)calloc(new_threshold, sizeof(map_pair_t *));
 
     size_t i;
-    hash_pair_t *p;
+    map_pair_t *p;
     for (i = 0; i < old_threshold; ++i) {
-        if ((p = h->buckets[i]) != NULL) {
+        if ((p = m->buckets[i]) != NULL) {
 
             if (p->next == NULL) {
                 new_buckets[p->hash & (new_threshold - 1)] = p;
             } else {
-                hash_pair_t *next;
-                hash_pair_t *low_head = NULL, *low_tail = NULL;
-                hash_pair_t *high_head = NULL, *high_tail = NULL;
+                map_pair_t *next;
+                map_pair_t *low_head = NULL, *low_tail = NULL;
+                map_pair_t *high_head = NULL, *high_tail = NULL;
 
                 do {
                     next = p->next;
@@ -143,41 +143,41 @@ static void __resize(hash_t *h)
             }
         }
     }
-    free(h->buckets);
-    h->buckets = new_buckets;
-    h->threshold = new_threshold;
+    free(m->buckets);
+    m->buckets = new_buckets;
+    m->threshold = new_threshold;
 }
 
-hash_t *hash_init(int key_type, int val_type)
+map_t *map_init(int key_type, int val_type)
 {
-	return hash_init_with_cap(key_type, val_type, DEFAULT_INITIAL_CAPACITY);
+	return map_init_with_cap(key_type, val_type, DEFAULT_INITIAL_CAPACITY);
 }
 
-hash_t *hash_init_with_cap(int key_type, int val_type, size_t capacity)
+map_t *map_init_with_cap(int key_type, int val_type, size_t capacity)
 {
 	if (capacity < 0)
 		return NULL;
 	
-	hash_t *h = NULL;
-    if ((h = calloc(1, sizeof(hash_t))) == NULL)
+	map_t *m = NULL;
+    if ((m = calloc(1, sizeof(map_t))) == NULL)
         return NULL;
 
     switch (key_type) {
     case L:
     case LL:
-	    h->hash = __ll_hash;
-        h->match = __int_match;
+	    m->hash = __ll_hash;
+        m->match = __int_match;
         break;
     case INT:
-	    h->hash = __int_hash;
-        h->match = __int_match;
+	    m->hash = __int_hash;
+        m->match = __int_match;
         break;
     case STR:
-	    h->hash = __str_hash;
-        h->match = __str_match;
+	    m->hash = __str_hash;
+        m->match = __str_match;
         break;
     default:
-        free(h);
+        free(m);
         return NULL;
     }
 
@@ -190,25 +190,25 @@ hash_t *hash_init_with_cap(int key_type, int val_type, size_t capacity)
     case POINTER:
         break;
     default:
-        free(h);
+        free(m);
         return NULL;
     }
 
-    h->key_type = key_type;
-    h->val_type = val_type;
-    h->init_capacity = capacity > MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : capacity;
-	h->threshold = __table_size_for(h->init_capacity);
-    h->size = 0;
-	h->buckets = (hash_pair_t **)calloc(h->threshold, sizeof(hash_pair_t *));
+    m->key_type = key_type;
+    m->val_type = val_type;
+    m->init_capacity = capacity > MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : capacity;
+	m->threshold = __table_size_for(m->init_capacity);
+    m->size = 0;
+	m->buckets = (map_pair_t **)calloc(m->threshold, sizeof(map_pair_t *));
 
-	return h;
+	return m;
 }
 
-void hash_destroy(hash_t *h)
+void map_destroy(map_t *m)
 {
-	__buckets_destroy(h->buckets, h->threshold);
+	__buckets_destroy(m->buckets, m->threshold);
 
-    free(h);
+    free(m);
 }
 
 void *__calloc_for(int type, void *k)
@@ -247,42 +247,42 @@ unsigned int __hash(unsigned int hash)
     return hash ^ (hash >> 16);
 }
 
-int  hash_put(hash_t *h, void *key, void *val)
+int  map_put(map_t *m, void *key, void *val)
 {
-    unsigned int hash = key == NULL ? 0 : __hash(h->hash(key));
-    unsigned int pos = hash & (h->threshold - 1);
+    unsigned int hash = key == NULL ? 0 : __hash(m->hash(key));
+    unsigned int pos = hash & (m->threshold - 1);
 
 #ifdef DEBUG
-    if (h->key_type == STR) 
-        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, h->threshold, hash, pos);
+    if (m->key_type == STR) 
+        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
 #endif
 
-    if (__find(key, h->buckets[pos], h->match) != NULL)
+    if (__find(key, m->buckets[pos], m->match) != NULL)
         return -1;
 
-    hash_pair_t *hp = calloc(1, sizeof(hash_pair_t));
-    void *newkey = __calloc_for(h->key_type, key);
-    void *newval = __calloc_for(h->val_type, val);
-    hp->key = newkey;
-    hp->val = newval;
-	hp->hash = hash;
-    hp->next = h->buckets[pos];
-    h->buckets[pos] = hp;
+    map_pair_t *mp = calloc(1, sizeof(map_pair_t));
+    void *newkey = __calloc_for(m->key_type, key);
+    void *newval = __calloc_for(m->val_type, val);
+    mp->key = newkey;
+    mp->val = newval;
+	mp->hash = hash;
+    mp->next = m->buckets[pos];
+    m->buckets[pos] = mp;
 
-    if (++h->size > h->threshold)
-        __resize(h);
+    if (++m->size > m->threshold)
+        __resize(m);
 
     return 0;
 }
 
-int hash_replace(hash_t *h, void *key, void *val)
+int map_replace(map_t *m, void *key, void *val)
 {
     return 0;
 }
 
-void **hash_keys(hash_t *h, size_t *size)
+void **map_keys(map_t *m, size_t *size)
 {
-    *size = h->size;
+    *size = m->size;
     void **ks = (void **)calloc(*size, sizeof(void *));
     if (ks == NULL) {
         *size = 0;
@@ -290,9 +290,9 @@ void **hash_keys(hash_t *h, size_t *size)
     }
 
     int i, j = 0;
-    hash_pair_t *p = NULL;
-    for (i = 0; i < h->threshold; ++i) {
-         p = h->buckets[i];
+    map_pair_t *p = NULL;
+    for (i = 0; i < m->threshold; ++i) {
+         p = m->buckets[i];
          while (p) {
              ks[j++] = p->key;
              p = p->next;
@@ -301,30 +301,30 @@ void **hash_keys(hash_t *h, size_t *size)
     return ks;
 }
 
-void hash_destroy_keys(void **keys)
+void map_destroy_keys(void **keys)
 {
     free(keys);
 }
 
-int hash_get(hash_t *h, void *key, void **val)
+int map_get(map_t *m, void *key, void **val)
 {
-    unsigned int hash = key == NULL ? 0 : __hash(h->hash(key));
-    int pos = hash & (h->threshold - 1);
+    unsigned int hash = key == NULL ? 0 : __hash(m->hash(key));
+    int pos = hash & (m->threshold - 1);
 
 #ifdef DEBUG
-    if (h->key_type == STR) 
-        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, h->threshold, hash, pos);
+    if (m->key_type == STR) 
+        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
 #endif
 
-    hash_pair_t *hi = __find(key, h->buckets[pos], h->match);
-    if (hi == NULL)
+    map_pair_t *mp = __find(key, m->buckets[pos], m->match);
+    if (mp == NULL)
         return -1;
-    *val = hi->val;
+    *val = mp->val;
 
     return 0;
 }
 
-size_t hash_count(hash_t *h)
+size_t map_count(map_t *m)
 {
-    return h->size;
+    return m->size;
 }

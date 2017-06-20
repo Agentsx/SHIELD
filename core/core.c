@@ -24,7 +24,7 @@ int core_init()
 		return -1;
 	}
 
-    g_core_data->trade_list = hash_init(STR, POINTER);
+    g_core_data->trade_list = map_init(STR, POINTER);
     if (get_trade_list(g_core_data->db_conn, g_core_data->trade_list, g_core_data->trade_date)) {
         printf("ERROR: [%s][%d] get trade list error.\n", __FL__); 
         return -1;

@@ -35,7 +35,7 @@ int accept_fd(int sockfd)
     return -1;
 }
 
-int init_net()
+int init_net(int port)
 {
     int sockfd;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);

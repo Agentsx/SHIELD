@@ -3,27 +3,27 @@
 #include "utils/queue.h"
 #include <stdio.h>
 
-int middle_push_in(shield_head *h)
+int middle_push_in(shield_head_t *h)
 {
 	return queue_push(g_svr->tp->core_in, h);
 }
 
-int middle_push_out(shield_head *h)
+int middle_push_out(shield_head_t *h)
 {
 	return queue_push(g_svr->tp->middle_out, h);
 }
 
-int core_push_to_middle(shield_head *h)
+int core_push_to_middle(shield_head_t *h)
 {
 	return queue_push(g_svr->tp->core_out, h);
 }
 
-int core_push_to_persistent(shield_head *h)
+int core_push_to_persistent(shield_head_t *h)
 {
 	return queue_push(g_svr->tp->persistent_in, h);
 }
 
-typedef int (*biz_handler)(shield_head *h);
+typedef int (*biz_handler)(shield_head_t *h);
 biz_handler find_core_handler(int type)
 {
 	if (type <= 0 && type > MAX_TYPE)
@@ -32,9 +32,9 @@ biz_handler find_core_handler(int type)
 	return g_svr->core->handlers[type];
 }
 
-int core_handler_exe(shield_head *h)
+int core_handler_exe(shield_head_t *h)
 {
-	int (*biz_handler)(shield_head *h);
+	int (*biz_handler)(shield_head_t *h);
 
 	biz_handler = find_core_handler(h->trade_type); 
 
@@ -47,7 +47,7 @@ int core_handler_exe(shield_head *h)
 	return 0;	
 }
 
-int init_core_handler(core_handler *core, handler_map_t *m)
+int init_core_handler(core_handler_t *core, handler_map_t *m)
 {
 	int i;	
 	for (i = 0; m[i].type != 0 && m[i].handler != NULL; ++i) {
@@ -60,7 +60,7 @@ int init_core_handler(core_handler *core, handler_map_t *m)
 	return 0;
 }
 
-int init_middle_handler(middle_handler *middle, int (*fin)(shield_head *), int (*fout)(shield_head *))
+int init_middle_handler(middle_handler_t *middle, int (*fin)(shield_head_t *), int (*fout)(shield_head_t *))
 {
 	middle->handle_in = fin;
 	middle->handle_out = fout;
@@ -70,7 +70,7 @@ int init_middle_handler(middle_handler *middle, int (*fin)(shield_head *), int (
 }
 
 
-int init_persistent_handler(persistent_handler *persistent, int (*handler)(shield_head *))
+int init_persistent_handler(persistent_handler_t *persistent, int (*handler)(shield_head_t *))
 {
 	persistent->handler = handler;
 	return 0;

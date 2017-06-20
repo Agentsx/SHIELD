@@ -1,4 +1,4 @@
-#include "hash.h"
+#include "map.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     /* Integer test */
     // begin
-    hash_t *h = hash_init(LL, LL);
+    map_t *h = map_init(LL, LL);
 
     long long key = 5;
     long long val = 10;
@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < 1000; ++i) {
         key = i;
         val = i + 2;
-        hash_put(h, &key, &val);
+        map_put(h, &key, &val);
     }
 
     long long *gval = NULL;
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     /*
     for (i = 0; i < 1000; ++i) {
         key = i;
-        ret = hash_get(h, &key, (void **)&gval);
+        ret = map_get(h, &key, (void **)&gval);
         if (ret != 0)
             printf("Not found val from hash of key[%lld] error.\n", key);
         else
@@ -35,15 +35,15 @@ int main(int argc, char *argv[])
     }
     */
 
-    // test hash_keys
+    // test map_keys
     size_t size = 0;
-    void **keys = hash_keys(h, &size);
+    void **keys = map_keys(h, &size);
     if (keys == NULL) {
         printf("get keys error.\n"); 
         return -1;
     }
     for (i = 0; i < size; ++i) {
-        ret = hash_get(h, keys[i], (void **)&gval);
+        ret = map_get(h, keys[i], (void **)&gval);
         if (ret != 0)
             printf(".. Not found val from hash of key[%lld] error.\n", *(long long *)keys[i]);
         else
@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
         gval = NULL;
     }
 
-    hash_destroy_keys(keys);
+    map_destroy_keys(keys);
     // end
 
-    hash_destroy(h);
+    map_destroy(h);
 
     // end
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     
     char s[53] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    hash_t *h = hash_init_with_cap(STR, STR, 900);
+    map_t *h = map_init_with_cap(STR, STR, 900);
 
     srandom(time(NULL));
 
@@ -83,13 +83,13 @@ int main(int argc, char *argv[])
             key[i][j] = s[index];
         }
 
-        hash_put(h, key[i], key[i]);
+        map_put(h, key[i], key[i]);
     }
 
     char *gval = NULL;
     int  ret;
     for (i = 0; i < KEY_NUM; ++i) {
-        ret = hash_get(h, key[i], (void **)&gval);
+        ret = map_get(h, key[i], (void **)&gval);
         if (ret != 0)
             printf("Not found val from hash of key[%s] error.\n", key[i]);
         else
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
         gval = NULL;
     }
 
-    hash_destroy(h);
+    map_destroy(h);
     */ // end
 
     return 0;

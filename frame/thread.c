@@ -55,7 +55,6 @@ int __socket_event_handler(int fd, struct epoll_event *event)
     return 0;
 }
 
-
 int __send_heart_beat()
 {
 	printf("TRACE: [%s][%d] send heart beat.\n", __FL__);
@@ -93,7 +92,7 @@ static void *__manage_routine(void *ctx)
         }
 
 		int counter = 5;
-		shield_head *h = NULL;
+		shield_head_t *h = NULL;
         while (counter--) {
 			h = NULL;
             if (queue_pop(tp->read_out, (void **)&h))
@@ -189,7 +188,7 @@ static void *__read_routine(void *ctx)
 				printf("TRACE: [%s][%d] read fd[%d] end ......\n", __FL__, fd);
                 if (msg != NULL) { // good msg, put it
 					printf("TRACE: [%s][%d] read msg[%s] from fd length[%ld].\n", __FL__, (char *)msg, len);
-					shield_head *h = calloc(1, sizeof(shield_head) + len);
+					shield_head_t *h = calloc(1, sizeof(shield_head_t) + len);
 					h->magic_num = MAGIC_NUM;
 					h->len = len;
 					h->fd = fd;
@@ -213,7 +212,7 @@ static void *__write_routine(void *ctx)
 {
     thread_begin("write");
 
-   	shield_head *h;
+   	shield_head_t *h;
     while (1) {
 		h = NULL;
         if (queue_pop(tp->write_in, (void **)&h))
@@ -245,7 +244,7 @@ static void *__core_routine(void *ctx)
 		printf("ERROR: [%s][%d] core init error [%d].\n", __FL__, ret);	
 		g_svr->running = 0;
 	}
-    shield_head *h;
+    shield_head_t *h;
     while (g_svr->running) {
         usleep(SLEEPTIME);
         h = NULL;
@@ -272,7 +271,7 @@ static void *__core_routine(void *ctx)
 static void *__persistent_routine(void *ctx)
 {
     thread_begin("persistent");
-	shield_head *head;
+	shield_head_t *head;
 	int ret;
     while (1) {
 		head = NULL;
@@ -297,7 +296,7 @@ static void *__persistent_routine(void *ctx)
 static void *__middle_routine(void *ctx)
 {
     thread_begin("middle");
-    shield_head *head;
+    shield_head_t *head;
     while (1) {
         int ret;
         int counter = 5;
