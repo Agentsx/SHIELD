@@ -1,4 +1,5 @@
 #include "map.h"
+#include "utils.h"
 #include <string.h>
 
 static int __int_match(const void *a, const void *b)
@@ -49,7 +50,7 @@ static int __table_size_for(int cap) {
     n |= n >> 4;
     n |= n >> 8;
     n |= n >> 16;
-    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    return (n < 0) ? 1 : (n >= MAP_MAXIMUM_CAPACITY) ? MAP_MAXIMUM_CAPACITY : n + 1;
 }
 
 void __map_pair_destroy(map_pair_t *p)
@@ -95,7 +96,7 @@ map_pair_t *__find(void *key, map_pair_t *head, int (*match)(const void *a, cons
 
 static void __resize(map_t *m)
 {
-    if (m->threshold >= MAXIMUM_CAPACITY)
+    if (m->threshold >= MAP_MAXIMUM_CAPACITY)
         return;
 
     size_t old_threshold = m->threshold;
@@ -150,7 +151,7 @@ static void __resize(map_t *m)
 
 map_t *map_init(int key_type, int val_type)
 {
-	return map_init_with_cap(key_type, val_type, DEFAULT_INITIAL_CAPACITY);
+	return map_init_with_cap(key_type, val_type, MAP_DEFAULT_INITIAL_CAPACITY);
 }
 
 map_t *map_init_with_cap(int key_type, int val_type, size_t capacity)
@@ -196,7 +197,7 @@ map_t *map_init_with_cap(int key_type, int val_type, size_t capacity)
 
     m->key_type = key_type;
     m->val_type = val_type;
-    m->init_capacity = capacity > MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : capacity;
+    m->init_capacity = capacity > MAP_MAXIMUM_CAPACITY ? MAP_MAXIMUM_CAPACITY : capacity;
 	m->threshold = __table_size_for(m->init_capacity);
     m->size = 0;
 	m->buckets = (map_pair_t **)calloc(m->threshold, sizeof(map_pair_t *));

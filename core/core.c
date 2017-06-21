@@ -1,5 +1,6 @@
 #include "db_handler.h"
 #include "core.h"
+#include "utils/utils.h"
 
 #include <stdio.h>
 #include <string.h>

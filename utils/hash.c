@@ -1,4 +1,5 @@
 #include "hash.h"
+#include "utils.h"
 #include <string.h>
 
 static int __ll_match(const void *a, const void *b)
@@ -58,7 +59,7 @@ static int __table_size_for(int cap) {
     n |= n >> 4;
     n |= n >> 8;
     n |= n >> 16;
-    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+    return (n < 0) ? 1 : (n >= HASH_MAXIMUM_CAPACITY) ? HASH_MAXIMUM_CAPACITY : n + 1;
 }
 
 static void __list_destroy(hash_item_t *l, void (*destroy)(void *a))
@@ -165,7 +166,7 @@ hash_t *hash_init(int type,
                   int (*match)(const void *a, const void *b),
                   void (*destroy)(void *a))
 {
-	return hash_init_with_cap(type, DEFAULT_INITIAL_CAPACITY, hash, match, destroy);
+	return hash_init_with_cap(type, HASH_DEFAULT_INITIAL_CAPACITY, hash, match, destroy);
 }
 
 hash_t *hash_init_with_cap(int type,

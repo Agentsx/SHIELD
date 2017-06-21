@@ -1,9 +1,10 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
-#include "db/sqlite3/sqlite3.h"
+#include "include/sqlite3.h"
 #include "frame/frame.h"
 #include "include/tbl.h"
+#include "utils/map.h"
 
 #define TRUE  0
 #define FALSE 1
@@ -19,11 +20,21 @@ extern char result_desc[32];
 
 #define STRNCPY(a, b) strncpy(a, b, sizeof(a))
 
-#define CLEAR_RESULT {result_code = 0; memset(result_desc, 0, sizeof(result_desc));}
-#define SET_RESULT(code, desc) { \
-	STRNCPY(result_code, code); \
-	STRNCPY(result_desc, desc); \
-}
+#define CLEAR_RESULT() \
+    memset(result_code, 0, sizeof(result_code)); \
+    memset(result_desc, 0, sizeof(result_desc));
+
+#define __EC(c, m) c
+#define __EM(c, m) m
+
+#define _EC(x) __EC x
+#define _EM(x) __EM x
+
+#define _SET_RESULT(x) \
+	strncpy(result_code, _EC(x), sizeof(result_code)); \
+	strncpy(result_desc, _EM(x), sizeof(result_desc));
+
+#define SET_RESULT(x) _SET_RESULT(x)
 
 #define CALLOC_MSG(s, ifd, type) \
 	shield_head_t *__##s = calloc(1, sizeof(shield_head_t) + sizeof(s##_t)); \

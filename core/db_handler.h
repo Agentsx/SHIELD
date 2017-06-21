@@ -2,6 +2,7 @@
 #define __DB_HANDLER_H__
 
 #include "include/tbl.h"
+#include "utils/hash.h"
 #include "utils/map.h"
 #include "utils/array.h"
 #include "include/sqlite3.h"

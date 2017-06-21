@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#define DEFAULT_ARRAY_CAP 16
-#define MAX_ARRAY_CAP     (1 << 30)
+#define ARRAY_DEFAULT_CAP 16
+#define ARRAY_MAX_CAP     (1 << 30)
 
 typedef void (*array_item_destroy)(void *);
 

@@ -11,7 +11,7 @@ void *array_get(array_t *a, size_t i)
 
 static int __array_resize(array_t *a)
 {
-    if (a->capacity >= MAX_ARRAY_CAP || (a->capacity << 1) > MAX_ARRAY_CAP)
+    if (a->capacity >= ARRAY_MAX_CAP || (a->capacity << 1) > ARRAY_MAX_CAP)
         return -1;
 
     a->capacity <<= 1;
@@ -35,8 +35,8 @@ size_t array_count(array_t *a)
 array_t *array_init(array_item_destroy destroy)
 {
     array_t *a = calloc(1, sizeof(array_t));
-    a->capacity = DEFAULT_ARRAY_CAP;
-    a->data = (void **)calloc(DEFAULT_ARRAY_CAP, sizeof(void *));
+    a->capacity = ARRAY_DEFAULT_CAP;
+    a->data = (void **)calloc(ARRAY_DEFAULT_CAP, sizeof(void *));
     a->destroy = destroy;
     return a;
 }

@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#define DEFAULT_INITIAL_CAPACITY 1 << 4
-#define MAXIMUM_CAPACITY         1 << 30
+#define HASH_DEFAULT_INITIAL_CAPACITY 1 << 4
+#define HASH_MAXIMUM_CAPACITY         1 << 30
 
 #define DEBUG
 #include <stdio.h>
@@ -25,8 +25,6 @@ typedef struct hash_s {
 	unsigned int  (*hash)(const void *s);
 	hash_item_t   **buckets;
 } hash_t;
-
-enum item_type{LL, INT, L, DOUBLE, STR, POINTER};
 
 hash_t *hash_init(int type,
                   unsigned int (*hash)(const void *a),
