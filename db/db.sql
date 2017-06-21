@@ -1,9 +1,11 @@
+drop table t_user;
 create table t_user (
 	f_username varchar(40) primary key,
 	f_password varchar(256) not null,
 	f_status   int not null
 );
 
+drop table t_client;
 create table t_client (
 	f_acc_no   varchar(20) primary key,
 	f_pbu      varchar(10) not null,
@@ -11,6 +13,7 @@ create table t_client (
 	f_status   int    not null
 );
 
+drop table t_trade_info;
 create table t_trade_info (
 	f_trade_date  varchar(8),
 	f_sge_instruc varchar(16),
@@ -26,16 +29,19 @@ create table t_trade_info (
 	primary key(f_trade_date, f_sge_instruc)
 );
 
+drop table t_trade_date;
 create table t_trade_date (
 	f_trade_date  varchar(8) not null
 );
 
+drop table t_trade_time;
 create table t_trade_time (
 	f_seq        int primary key,
 	f_start_time varchar(8) not null,
 	f_end_time   varchar(8) not null
 );
 
+drop table t_trade_list;
 create table t_trade_list (
 	f_trade_date  varchar(8) not null,
 	f_etf_code    varchar(10) not null,
@@ -44,6 +50,7 @@ create table t_trade_list (
 	primary key(f_trade_date, f_etf_code)
 );
 
+drop table t_trade_vol;
 create table t_trade_vol (
 	f_trade_date   varchar(8) not null,
 	f_etf_code     varchar(10) not null,

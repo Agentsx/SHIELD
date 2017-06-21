@@ -20,7 +20,7 @@ static pthread_key_t __thread_key;
 
 void thread_begin(const char *name)
 {
-    pthread_setspecific(__thread_key, )
+    // pthread_setspecific(__thread_key, )
     printf("TRACE: Thread [%s] begin.\n", name);
 }
 

@@ -1,9 +1,7 @@
-#include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "db/db.h"
 #include "db_handler.h"
-#include "frame/frame.h"
 #include "include/tbl.h"
 #include "utils/array.h"
 #include "utils/hash.h"
@@ -12,7 +10,6 @@
 #include "core.h"
 
 #include <stdio.h>
-#include <string.h>
 
 static int __package_addvol_rsp_head(msg_head_t *h)
 {
@@ -41,7 +38,7 @@ int __check_client(add_vol_req_t *req)
 		return FALSE;
 	}
 
-	if (client.status == 0) {
+	if (client.status == CLIENT_OK) {
 		printf("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, req->account_id);
 		SET_RESULT(CLIENT_NOT_INUSE);
 		return FALSE;
@@ -59,7 +56,7 @@ int __check_client(add_vol_req_t *req)
 int __check_limit(add_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
+	int ret = get_trade_vol(g_core_data->db_conn, g_core_data->trade_date, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);
@@ -97,7 +94,7 @@ static int __check_sge_instruction(const char *instruction_id)
 	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol sge instructions already handled.\n", __FL__);
-        SET_RESULT(INSTRUCTION_ALREADY_HANDLED);
+        SET_RESULT(INSTRUCTION_HANDLED);
         goto ERROR;
     }
 

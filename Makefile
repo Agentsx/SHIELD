@@ -5,13 +5,14 @@ OBJS = shield.o
 
 all: libs $(SVR_NAME)
 
-LIBS = -L$(ROOTPATH)/frame -lframe \
+LDFLAGS = -L$(ROOTPATH)/frame -lframe \
        -L$(ROOTPATH)/middle -lmiddle \
        -L$(ROOTPATH)/core -lcore \
        -L$(ROOTPATH)/utils -lutils \
        -L$(ROOTPATH)/db -ldb \
        -L$(ROOTPATH)/libs -lsqlite3 \
        -L$(ROOTPATH)/libs -lparson \
+       -ldl \
        -lpthread
 
 .PHONY: libs clean
@@ -24,7 +25,7 @@ libs:
 	@make -C db
 
 $(SVR_NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $(SVR_NAME)
+	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $(SVR_NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<

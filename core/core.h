@@ -5,12 +5,16 @@
 #include "frame/frame.h"
 #include "include/tbl.h"
 #include "utils/map.h"
+#include "string.h"
 
 #define TRUE  0
 #define FALSE 1
 
 #define RECV   0
 #define SEND   1
+
+#define USER_OK    1
+#define CLIENT_OK  1
 
 #define TRADE_OK "00001"
 
@@ -30,11 +34,9 @@ extern char result_desc[32];
 #define _EC(x) __EC x
 #define _EM(x) __EM x
 
-#define _SET_RESULT(x) \
+#define SET_RESULT(x) \
 	strncpy(result_code, _EC(x), sizeof(result_code)); \
 	strncpy(result_desc, _EM(x), sizeof(result_desc));
-
-#define SET_RESULT(x) _SET_RESULT(x)
 
 #define CALLOC_MSG(s, ifd, type) \
 	shield_head_t *__##s = calloc(1, sizeof(shield_head_t) + sizeof(s##_t)); \

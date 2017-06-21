@@ -105,7 +105,7 @@ hash_item_t *__find(hash_item_t *head, void *item, int (*match)(const void *a, c
 
 static void __resize(hash_t *h)
 {
-    if (h->threshold >= MAXIMUM_CAPACITY)
+    if (h->threshold >= HASH_MAXIMUM_CAPACITY)
         return;
 
     size_t old_threshold = h->threshold;
@@ -215,7 +215,7 @@ hash_t *hash_init_with_cap(int type,
     }
 
     h->type = type;
-    h->init_capacity = capacity > MAXIMUM_CAPACITY ? MAXIMUM_CAPACITY : capacity;
+    h->init_capacity = capacity > HASH_MAXIMUM_CAPACITY ? HASH_MAXIMUM_CAPACITY : capacity;
 	h->threshold = __table_size_for(h->init_capacity);
     h->size = 0;
 	h->buckets = (hash_item_t **)calloc(h->threshold, sizeof(hash_item_t *));

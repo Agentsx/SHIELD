@@ -4,6 +4,7 @@
 #include "thread.h"
 #include "protocol.h"
 #include "utils/parsconf.h"
+#include "utils/utils.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

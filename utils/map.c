@@ -83,7 +83,7 @@ static void __buckets_destroy(map_pair_t **b, size_t thr)
     free(b);
 }
 
-map_pair_t *__find(void *key, map_pair_t *head, int (*match)(const void *a, const void *b))
+map_pair_t *__map_find(void *key, map_pair_t *head, int (*match)(const void *a, const void *b))
 {
     map_pair_t *p = head;
     while (p) {
@@ -212,7 +212,7 @@ void map_destroy(map_t *m)
     free(m);
 }
 
-void *__calloc_for(int type, void *k)
+void *__map_calloc_for(int type, void *k)
 {
     void *r;
 
@@ -243,14 +243,14 @@ void *__calloc_for(int type, void *k)
     return NULL;
 }
 
-unsigned int __hash(unsigned int hash)
+unsigned int __map_hash(unsigned int hash)
 {
     return hash ^ (hash >> 16);
 }
 
 int  map_put(map_t *m, void *key, void *val)
 {
-    unsigned int hash = key == NULL ? 0 : __hash(m->hash(key));
+    unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
     unsigned int pos = hash & (m->threshold - 1);
 
 #ifdef DEBUG
@@ -258,12 +258,12 @@ int  map_put(map_t *m, void *key, void *val)
         printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
 #endif
 
-    if (__find(key, m->buckets[pos], m->match) != NULL)
+    if (__map_find(key, m->buckets[pos], m->match) != NULL)
         return -1;
 
     map_pair_t *mp = calloc(1, sizeof(map_pair_t));
-    void *newkey = __calloc_for(m->key_type, key);
-    void *newval = __calloc_for(m->val_type, val);
+    void *newkey = __map_calloc_for(m->key_type, key);
+    void *newval = __map_calloc_for(m->val_type, val);
     mp->key = newkey;
     mp->val = newval;
 	mp->hash = hash;
@@ -309,7 +309,7 @@ void map_destroy_keys(void **keys)
 
 int map_get(map_t *m, void *key, void **val)
 {
-    unsigned int hash = key == NULL ? 0 : __hash(m->hash(key));
+    unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
     int pos = hash & (m->threshold - 1);
 
 #ifdef DEBUG
@@ -317,7 +317,7 @@ int map_get(map_t *m, void *key, void **val)
         printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
 #endif
 
-    map_pair_t *mp = __find(key, m->buckets[pos], m->match);
+    map_pair_t *mp = __map_find(key, m->buckets[pos], m->match);
     if (mp == NULL)
         return -1;
     *val = mp->val;

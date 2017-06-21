@@ -1,5 +1,6 @@
 #include "db.h"
 #include "utils/map.h"
+#include "utils/utils.h"
 #include <stdio.h>
 
 static int __callback(void *a, int argc, char **argv, char **col_name){
@@ -11,11 +12,15 @@ static int __callback(void *a, int argc, char **argv, char **col_name){
 
     int i;
     for (i = 0; i < argc; i++) {
+#ifdef DEBUG
         printf("%s = %s\n", col_name[i], argv[i] ? argv[i] : "NULL");
+#endif
         map_put(h, col_name[i], argv[i] ? argv[i] : "");
     }
     array_insert(p, (void *)h);
+#ifdef DEBUG
     printf("--\n");
+#endif
     return 0;
 }
 

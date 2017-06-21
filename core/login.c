@@ -49,7 +49,7 @@ static int __login_check(login_req_t *login_req)
 
     ret = __trade_date_check(login_req->data_date);
     if (ret) {
-        CPY_RESULT_DESC(TRADE_DATE_ERR);
+        SET_RESULT(TRADE_DATE_ERR);
         return ret;
     }
 
