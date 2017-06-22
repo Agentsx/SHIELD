@@ -2,6 +2,8 @@
 #include "frame.h"
 #include "net.h"
 #include "handler.h"
+#include "utils/utils.h"
+#include "utils/log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,10 +20,22 @@ thread_pool_t *tp = NULL;
 
 static pthread_key_t __thread_key;
 
+log_category_t *__get_log_category()
+{
+    printf("__get_log_category been called.\n");
+    return (log_category_t *)pthread_getspecific(__thread_key);
+}
+
 void thread_begin(const char *name)
 {
-    // pthread_setspecific(__thread_key, )
-    printf("TRACE: Thread [%s] begin.\n", name);
+    log_category_t *c = log_get_category(name);    
+    if (c == NULL) {
+        printf("get c[%s] error.\n", name);
+        exit(1);
+    }
+    pthread_setspecific(__thread_key, (void *)c);
+    log_set_callback(__get_log_category);
+    log_info("Thread begin.");
 }
 
 static int __fd_add(int fd)
@@ -244,9 +258,10 @@ static void *__core_routine(void *ctx)
     int ret;
 	ret = g_svr->core->init(NULL);
 	if (ret) {
-		printf("ERROR: [%s][%d] core init error [%d].\n", __FL__, ret);	
+		log_error("core init error.");	
 		g_svr->running = 0;
 	}
+    log_info("in core routine, some information to write.");
     shield_head_t *h;
     while (g_svr->running) {
         usleep(SLEEPTIME);
@@ -402,6 +417,10 @@ thread_pool_t *thread_pool_init()
         printf("[%s][%d] FATAL: queue init error.\n", __FL__);
         return NULL;
     }
+    
+    pthread_key_create(&__thread_key, NULL);
+
+    thread_begin("main");
 
     return tp;
 }

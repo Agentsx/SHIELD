@@ -55,6 +55,7 @@ typedef struct core_data_s {
 	char       trade_date[16];
 	long long  recv_trans_no;
 	long long  send_trans_no;
+    int        biz_over_flag;
 	sqlite3    *db_conn;
     map_t      *trade_list;
 } core_data_t;

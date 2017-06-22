@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "utils/parsconf.h"
 #include "utils/utils.h"
+#include "utils/log.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -31,6 +32,16 @@ int server_init(char *cfg_file)
 	}
 
     char *s = NULL;
+    if (map_get(g_svr->cfg, "log_conf", (void *)&s)) {
+		printf("ERROR: [%s][%d] get listen port error.\n", __FL__);
+        return -1; 
+    }
+
+    if (log_init(s)) {
+		printf("ERROR: [%s][%d] init log[%s] error.\n", __FL__, s);
+        return -1; 
+    }
+
     if (map_get(g_svr->cfg, "listen_port", (void *)&s)) {
 		printf("ERROR: [%s][%d] get listen port error.\n", __FL__);
 		return -1;
@@ -47,6 +58,7 @@ int server_init(char *cfg_file)
 		printf("ERROR: [%s][%d] initialize net error.\n", __FL__);
 		return -1;
 	}
+    printf("TRACE: [%s][%d] net init end.\n", __FL__);
 
 	g_svr->listenfd = listenfd;
 
@@ -55,6 +67,7 @@ int server_init(char *cfg_file)
 		printf("ERROR: [%s][%d] initialize threads pool error.\n", __FL__);
 		return -1;
 	}
+    printf("TRACE: [%s][%d] poll init end.\n", __FL__);
 
 	tp->sse_protocol = init_protocol();
 	if (tp->sse_protocol == NULL) {
@@ -74,6 +87,7 @@ int server_init(char *cfg_file)
 
 	g_svr->running = 1;
 
+    printf("TRACE: [%s][%d] server init end.\n", __FL__);
 	return 0;
 }
 

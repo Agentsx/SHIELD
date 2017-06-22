@@ -12,6 +12,7 @@ LDFLAGS = -L$(ROOTPATH)/frame -lframe \
        -L$(ROOTPATH)/db -ldb \
        -L$(ROOTPATH)/libs -lsqlite3 \
        -L$(ROOTPATH)/libs -lparson \
+       -L$(ROOTPATH)/libs -lzlog \
        -ldl \
        -lpthread
 
