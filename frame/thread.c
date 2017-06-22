@@ -260,6 +260,7 @@ static void *__core_routine(void *ctx)
 	if (ret) {
 		log_error("core init error.");	
 		g_svr->running = 0;
+        exit(1);
 	}
     log_info("in core routine, some information to write.");
     shield_head_t *h;

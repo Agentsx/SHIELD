@@ -9,5 +9,6 @@ handler_map_t g_hp[] = {
 	{PING_RSP, ping_rsp_handler},
 	{ADD_VOL_REQ, add_vol_req_handler},
 	{CUT_VOL_REQ, cut_vol_req_handler},
-	{TRADE_QRY_REQ, trade_qry_req_handler}
+	{TRADE_QRY_REQ, trade_qry_req_handler},
+    {0, NULL}
 };

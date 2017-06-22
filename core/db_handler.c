@@ -20,7 +20,7 @@ int db_conn_init(sqlite3 **conn)
 
 int get_trade_date(sqlite3 *conn, char *date)
 {
-	char *sql = "select max(f_trade_date) from t_trade_date;";
+	char *sql = "select max(f_trade_date) as f_trade_date from t_trade_date;";
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
 
