@@ -66,7 +66,7 @@ int __socket_event_handler(int fd, struct epoll_event *event)
         int connfd = accept_fd(fd);
         if (connfd > 0) {
             __fd_add(connfd);
-			printf("TRACE: [%s][%d] connect new fd [%d].\n", __FL__, connfd);
+			log_info("connect new fd [%d].", connfd);
 		}
     }
     return 0;
@@ -74,7 +74,7 @@ int __socket_event_handler(int fd, struct epoll_event *event)
 
 int __send_heart_beat()
 {
-	printf("TRACE: [%s][%d] send heart beat.\n", __FL__);
+	log_info("send heart beat.");
 	
 	return 0;
 }
@@ -104,8 +104,8 @@ static void *__manage_routine(void *ctx)
             if (fd == g_svr->listenfd)
                 __socket_event_handler(fd, &events[i]);
             else
-                printf("FATAL: [%s][%d] epoll event. fd[%d].\n", __FL__, fd);
-			printf("DEBUG: [%s][%d] some one connected.\n", __FL__);
+                log_fatal("epoll event. fd[%d].", fd);
+			log_debug("some one connected.");
         }
 
 		int counter = 5;
@@ -123,7 +123,7 @@ static void *__manage_routine(void *ctx)
 					int fd = *(int *)((unsigned int *)h + 1);
 					close_fd(fd);
 				} else {
-					printf("FATAL: [%s][%d] unkown st [%u].\n", __FL__, st);
+					log_fatal("unkown st [%u].\n", st);
 				}
 				free(h);
 			}
@@ -138,7 +138,7 @@ static void *__manage_routine(void *ctx)
 			if (h->magic_num == MAGIC_NUM) {
 				push_to(h, tp->write_in);
 			} else {
-				printf("FATAL: [%s][%d] read from middle out error.\n", __FL__);	
+				log_fatal("read from middle out error.");	
 				free(h);
 			}
 			gettimeofday(&tv_last, NULL);
@@ -182,7 +182,7 @@ static void *__read_routine(void *ctx)
                 event.events |= EPOLLERR | EPOLLHUP;
                 event.data.fd = fd;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
-				printf("TRACE: [%s][%d] read thread add new fd [%d].\n", __FL__, fd);
+				log_info("read thread add new fd [%d].", fd);
             } else if (st == READ_DEL_FD) {
                 epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
                 __push_del_fd(fd, tp->read_out);
@@ -194,17 +194,17 @@ static void *__read_routine(void *ctx)
             int fd = events[i].data.fd;
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                 epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
-				printf("TRACE: [%s][%d] fd [%d] error.\n", __FL__, fd);
+				log_info("fd [%d] error.", fd);
                 __push_del_fd(fd, tp->read_out);
             }
             if (events[i].events & EPOLLIN) {
 				int fd = events[i].data.fd;
 				size_t len = 0;
-				printf("TRACE: [%s][%d] read fd[%d] begin ......\n", __FL__, fd);
+				log_info("read fd[%d] begin ......", fd);
 				void *msg = tp->sse_protocol->pro_read(fd, &len);
-				printf("TRACE: [%s][%d] read fd[%d] end ......\n", __FL__, fd);
+				log_info("read fd[%d] end ......", fd);
                 if (msg != NULL) { // good msg, put it
-					printf("TRACE: [%s][%d] read msg[%s] from fd length[%ld].\n", __FL__, (char *)msg, len);
+					log_info("read msg[%s] from fd length[%ld].", (char *)msg, len);
 					shield_head_t *h = calloc(1, sizeof(shield_head_t) + len);
 					h->magic_num = MAGIC_NUM;
 					h->len = len;
@@ -214,7 +214,7 @@ static void *__read_routine(void *ctx)
                		free(msg);
                 } else {
 					// bad fd, delete it
-					printf("ERROR: [%s][%d] read msg from fd error.\n", __FL__);
+					log_error("read msg from fd error.");
 					epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
                 	__push_del_fd(fd, tp->read_out);
 				}
@@ -236,15 +236,15 @@ static void *__write_routine(void *ctx)
 			continue;
 
         if (h->magic_num == MAGIC_NUM) {
-        	printf("TRACE: [%s][%d] will write to fd[%d], message[%s], length[%ld].\n", __FL__, h->fd, (char *)(h + 1), h->len);
+        	log_info("will write to fd[%d], message[%s], length[%ld].", h->fd, (char *)(h + 1), h->len);
         	int ret;
         	ret = tp->sse_protocol->pro_write(h->fd, h + 1, h->len);
-        	printf("TRACE: [%s][%d] length[%d] wroten.\n", __FL__, ret);
+        	log_info("length[%d] wroten.\n", ret);
 			free(h);
 		} else {
-        	printf("ERROR: [%s][%d] read from write in error.\n", __FL__);
+        	log_error("read from write in error.");
 		}
-        printf("TRACE: [%s][%d] head [%p].\n", __FL__, h);
+        log_info("head [%p].", h);
         usleep(SLEEPTIME);
     }
     
@@ -269,15 +269,15 @@ static void *__core_routine(void *ctx)
         if (queue_pop(tp->core_in, (void **)&h))
 			continue;
 
-		printf("TRACE: [%s][%d] core read something from core in.\n", __FL__);
+		log_info("core read something from core in.");
         if (h->magic_num == MAGIC_NUM) {
 			ret = g_svr->core->handler(h);
 			if (ret)
-				printf("ERROR: [%s][%d] core handle msg error [%d].\n", __FL__, ret);
+				log_error("core handle msg error [%d].", ret);
 			else
-				printf("TRACE: [%s][%d] core handle msg OK.\n", __FL__);
+				log_info("core handle msg OK.");
 		} else {
-			printf("TRACE: [%s][%d] read from core in error.\n", __FL__);
+			log_info("read from core in error.");
 		}
     
         free(h);
@@ -296,12 +296,12 @@ static void *__persistent_routine(void *ctx)
         if (queue_pop(tp->persistent_in, (void **)&head))
 			continue;
 
-		printf("TRACE: [%s][%d] persistent read someting from core.\n", __FL__);
+		log_info("persistent read someting from core.");
         if (head->magic_num == MAGIC_NUM) {
 			ret = g_svr->persistent->handler(head);
 
 		} else {
-			printf("FATAL: [%s][%d] persistent handle msg error [%d].\n", __FL__, ret);
+			log_fatal("persistent handle msg error [%d].", ret);
 		}
 		free(head);
 
@@ -326,9 +326,9 @@ static void *__middle_routine(void *ctx)
             if (head->magic_num == MAGIC_NUM) {
             	ret = g_svr->middle->handle_in(head);
 				if (ret)
-					printf("ERROR: [%s][%d] middle handle in message error [%d].\n", __FL__, ret);
+					log_error("middle handle in message error [%d].", ret);
 			} else {
-					printf("ERROR: [%s][%d] read from middle in error.\n", __FL__);
+					log_error("read from middle in error.");
 			}
 
             free(head);
@@ -343,9 +343,9 @@ static void *__middle_routine(void *ctx)
             if (head->magic_num == MAGIC_NUM) {
             	ret = g_svr->middle->handle_out(head);
 				if (ret)
-					printf("ERROR: [%s][%d] middle handle out message error [%d].\n", __FL__, ret);
+					log_error("middle handle out message error [%d].", ret);
 			} else {
-				printf("ERROR: [%s][%d] read from core out message error [%d].\n", __FL__, ret);
+				log_error("read from core out message error [%d].", ret);
 			}
 
             free(head);
@@ -386,35 +386,35 @@ thread_pool_t *thread_pool_init()
     tp->join = __join;
 
     if ((tp->read_in = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->read_out = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->write_in = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->middle_in = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->middle_out = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->core_in = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->core_out = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     if ((tp->persistent_in = queue_init()) == NULL) {
-        printf("[%s][%d] FATAL: queue init error.\n", __FL__);
+        log_fatal("queue init error.");
         return NULL;
     }
     

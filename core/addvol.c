@@ -5,9 +5,10 @@
 #include "db_handler.h"
 #include "frame/frame.h"
 #include "include/tbl.h"
+#include "utils/utils.h"
 #include "utils/array.h"
 #include "utils/hash.h"
-#include "utils/utils.h"
+#include "utils/log.h"
 #include "err.h"
 #include "core.h"
 
@@ -131,7 +132,7 @@ static int __check_trade_time()
 	tbl_trade_time_t *trade_time = NULL;
 	char start_time[2][16];
 	char end_time[2][16];
-	for (i = 0; i < array_count(a); ++i;) {
+	for (i = 0; i < array_count(a); ++i) {
 	    trade_time = (tbl_trade_time_t *)array_get(a, i); 
 		strncpy(start_time[i], trade_time->start_time, sizeof(trade_time->start_time));
 		strncpy(end_time[i], trade_time->end_time, sizeof(trade_time->end_time));
@@ -139,7 +140,7 @@ static int __check_trade_time()
 			return TRUE;	
 	}
 
-	printf("ERROR: it's not trade time now!\n", __FL__);
+	log_error("it's not trade time now!");
 	SET_RESULT(TRADE_TIME_ERR);
 	array_destroy(a);
 	return FALSE;

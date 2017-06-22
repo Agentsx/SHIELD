@@ -16,19 +16,19 @@ static int __auth_check(const char *user_name, const char *password)
     int ret;
     ret = get_user(g_core_data->db_conn, user_name, &user);
     if (ret) {
-	    printf("ERROR: [%s][%d] get user [%s] error.\n", __FL__, user_name);
+	    log_warn("get user [%s] error.\n", user_name);
         SET_RESULT(USER_NOT_FOUND);
         return -1;
     }
 
     if (strcmp(password, user.password)) {
-	    printf("ERROR: [%s][%d] user_name[%s] wrong password[%s].\n", __FL__, user_name, password);
+	    log_warn("user_name[%s] wrong password[%s].", user_name, password);
         SET_RESULT(WRONG_PASSWORD);
         return -1;
     }
 
     if (user.status != USER_OK) {
-	    printf("ERROR: [%s][%d] user_name[%s] status not ok.\n", __FL__, user_name);
+	    log_warn("user_name[%s] status not ok.\n", user_name);
         SET_RESULT(USER_STATUS_ERR);
         return -1;
     }
@@ -114,8 +114,8 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
         array_t *a = array_init(NULL);
         ret = get_send_trade_info_trans_no_greater_than(g_core_data->db_conn, begin_trans_no, a);
         if (ret) {
-            printf("ERROR: [%s][%d] no trade info found, begin_trans_no[%lld].\n", __FL__, begin_trans_no);
-            return -1;
+            log_error("no trade info found, begin_trans_no[%lld].", begin_trans_no);
+            return 0;
         }
 
         int i;
@@ -132,7 +132,7 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
 
 int login_req_handler(shield_head_t *h)
 {
-	printf("TRACE: [%s][%d] login req handler called.\n", __FL__);
+	log_info("login req handler called.");
 
     CLEAR_RESULT();
 	

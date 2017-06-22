@@ -2,6 +2,7 @@
 #include "frame.h"
 #include "utils/queue.h"
 #include <stdio.h>
+#include "utils/log.h"
 
 int middle_push_in(shield_head_t *h)
 {
@@ -41,7 +42,7 @@ int core_handler_exe(shield_head_t *h)
 	if (biz_handler != NULL) {
 		return biz_handler(h);
 	} else {
-		printf("ERROR: [%s][%d] handler for trade_type [%lld] not found\n", __FL__, h->trade_type);
+		log_error("handler for trade_type [%lld] not found.", h->trade_type);
 		return -1;
 	}
 	return 0;	
