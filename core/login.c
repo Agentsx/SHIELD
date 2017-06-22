@@ -5,6 +5,7 @@
 #include "err.h"
 #include "include/tbl.h"
 #include "utils/array.h"
+#include "utils/log.h"
 #include "db_handler.h"
 #include <stdio.h>
 #include <string.h>

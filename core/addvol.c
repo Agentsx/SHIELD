@@ -61,7 +61,7 @@ int __addvol_check_client(add_vol_req_t *req)
 int __addvol_check_limit(add_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
+	int ret = get_trade_vol(g_core_data->db_conn, g_core_data->trade_date, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);

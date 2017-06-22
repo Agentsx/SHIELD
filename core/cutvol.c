@@ -8,6 +8,7 @@
 #include "utils/array.h"
 #include "utils/hash.h"
 #include "utils/utils.h"
+#include "utils/log.h"
 #include "err.h"
 #include "core.h"
 
@@ -60,7 +61,7 @@ int __cutvol_check_client(cut_vol_req_t *req)
 int __cutvol_check_limit(cut_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
+	int ret = get_trade_vol(g_core_data->db_conn, g_core_data->trade_date, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);
@@ -75,7 +76,7 @@ int __cutvol_check_limit(cut_vol_req_t *req)
         return FALSE ;
     }
 
-	if (tl->redemption_limit < req->quantity - trade_vol.redemption) {
+	if (tl->redemption_limit < req->quantity + trade_vol.redemption) {
 		printf("WARNING: [%s][%d] cut vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(BEYOND_REDEMPTION_LIMIT);
 		return FALSE;
@@ -131,7 +132,7 @@ static int __cutvol_check_trade_time()
 	tbl_trade_time_t *trade_time = NULL;
 	char start_time[2][16];
 	char end_time[2][16];
-	for (i = 0; i < array_count(a); ++i;) {
+	for (i = 0; i < array_count(a); ++i) {
 	    trade_time = (tbl_trade_time_t *)array_get(a, i); 
 		strncpy(start_time[i], trade_time->start_time, sizeof(trade_time->start_time));
 		strncpy(end_time[i], trade_time->end_time, sizeof(trade_time->end_time));
@@ -139,7 +140,7 @@ static int __cutvol_check_trade_time()
 			return TRUE;	
 	}
 
-	printf("ERROR: it's not trade time now!\n", __FL__);
+	log_warn("it's not trade time now!");
 	SET_RESULT(TRADE_TIME_ERR);
 	array_destroy(a);
 	return FALSE;

@@ -22,7 +22,7 @@ int core_init()
 	}
 
 	if (db_conn_init(&(g_core_data->db_conn)) != 0) {
-		log_error("init db error.", __FL__);
+		log_error("init db error.");
 		return -1;
 	}
 

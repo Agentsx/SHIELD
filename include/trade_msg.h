@@ -119,7 +119,7 @@ typedef struct cut_vol_req_s{
 	char		instrument_id[8];
 	char		account_id[16];
 	char		PBU[8];
-	long long	quantity[16];
+	long long	quantity;
 } cut_vol_req_t;
 
 typedef struct cut_vol_rsp_s{
