@@ -5,7 +5,7 @@ OBJS = shield.o
 
 all: libs $(SVR_NAME)
 
-LDFLAGS = -L$(ROOTPATH)/frame -lframe \
+LIBRARY_PATH = -L$(ROOTPATH)/frame -lframe \
        -L$(ROOTPATH)/middle -lmiddle \
        -L$(ROOTPATH)/core -lcore \
        -L$(ROOTPATH)/utils -lutils \
@@ -26,7 +26,7 @@ libs:
 	@make -C db
 
 $(SVR_NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $(SVR_NAME)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBRARY_PATH) -o $(SVR_NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<

@@ -27,6 +27,20 @@ extern get_cat_func get_category;
 	zlog_info(c, fmt, ##__VA_ARGS__); \
 } while (0)
 
+#define log_notice(fmt, ...) do { \
+	log_category_t *c = get_category(); \
+	if (c == NULL) \
+    	printf("FALTAL: [%s][%d] log get category error.", __FILE__, __LINE__); \
+	zlog_notice(c, fmt, ##__VA_ARGS__); \
+} while (0)
+
+#define log_warn(fmt, ...) do { \
+	log_category_t *c = get_category(); \
+	if (c == NULL) \
+    	printf("FALTAL: [%s][%d] log get category error.", __FILE__, __LINE__); \
+	zlog_warn(c, fmt, ##__VA_ARGS__); \
+} while (0)
+
 #define log_error(fmt, ...) do { \
 	log_category_t *c = get_category(); \
 	if (c == NULL) \
@@ -39,13 +53,6 @@ extern get_cat_func get_category;
 	if (c == NULL) \
     	printf("FALTAL: [%s][%d] log get category error.", __FILE__, __LINE__); \
 	zlog_fatal(c, fmt, ##__VA_ARGS__); \
-} while (0)
-
-#define log_warn(fmt, ...) do { \
-	log_category_t *c = get_category(); \
-	if (c == NULL) \
-    	printf("FALTAL: [%s][%d] log get category error.", __FILE__, __LINE__); \
-	zlog_warn(c, fmt, ##__VA_ARGS__); \
 } while (0)
 
 #endif
