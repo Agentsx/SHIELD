@@ -1,5 +1,5 @@
+#!/bin/bash
 
-export LD_LIBARARY_PATH=./libs:$LD_LIBARARY_PATH
-echo $LD_LIBARARY_PATH
+export LD_LIBRARY_PATH=./libs:$LD_LIBRARY_PATH
 
-./shield -f conf/shield.cfg
+./shield -f ./conf/shield.cfg

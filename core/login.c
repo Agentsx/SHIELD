@@ -133,7 +133,7 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
 
 int login_req_handler(shield_head_t *h)
 {
-	log_info("login req handler called.");
+	log_notice("login req handler called.");
 
     CLEAR_RESULT();
 	

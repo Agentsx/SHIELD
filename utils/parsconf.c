@@ -6,7 +6,7 @@ int parse_config(const char *fn, map_t *map)
     JSON_Value *val;
     val = json_parse_file_with_comments(fn);
     if (val == NULL) {
-        printf("ERROR: [%s][%d] parse file error.\n", __FL__);
+        printf("ERROR: [%s][%d] parse file[%s] error.\n", __FL__, fn);
         return -1;
     }
 
