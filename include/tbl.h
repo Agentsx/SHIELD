@@ -21,6 +21,12 @@ typedef struct trade_info {
     char      result_desc[88];
 } tbl_trade_info_t;
 
+typedef struct trade_time {
+    int			seq;
+    char 		start_time[16];
+    char      	end_time[16];
+} tbl_trade_time_t;
+
 typedef struct trade_list {
     char      etf_code[16];
     long long apply_limit;

@@ -1,7 +1,9 @@
+#include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "db/db.h"
 #include "db_handler.h"
+#include "frame/frame.h"
 #include "include/tbl.h"
 #include "utils/array.h"
 #include "utils/hash.h"
@@ -10,6 +12,8 @@
 #include "core.h"
 
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 static int __package_addvol_rsp_head(msg_head_t *h)
 {
@@ -38,7 +42,7 @@ int __check_client(add_vol_req_t *req)
 		return FALSE;
 	}
 
-	if (client.status == CLIENT_OK) {
+	if (client.status == 0) {
 		printf("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, req->account_id);
 		SET_RESULT(CLIENT_NOT_INUSE);
 		return FALSE;
@@ -56,7 +60,7 @@ int __check_client(add_vol_req_t *req)
 int __check_limit(add_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_trade_vol(g_core_data->db_conn, g_core_data->trade_date, req->instrument_id, &trade_vol);
+	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);
@@ -106,12 +110,44 @@ ERROR:
     return FALSE;
 }
 
+static int __check_trade_time()
+{
+	char cur_time[16];
+	time_t timep;  
+	struct tm *p;  
+	time(&timep);  
+	p =localtime(&timep);
+	sprintf(cur_time,"%d:%d", p->tm_hour, p->tm_min);
+	
+	array_t *a = array_init(NULL);
+	int ret = 0;
+	ret = get_trade_time(g_core_data->db_conn , a);
+	if (ret) {
+	    printf("ERROR: [%s][%d] failed to find trade time !\n", __FL__);
+	    return -1;
+	}
+
+	int i;
+	tbl_trade_time_t *trade_time = NULL;
+	for (i = 0; i < array_count(a); ++i) {
+	    trade_info = (tbl_trade_time_t *)array_get(a, i); 
+		//比较当前时间是否在start_time和end_time之间		       
+	}
+
+	array_destroy(a);
+
+}
+
 static int __addvol_req_check(add_vol_req_t *req)
 {
 	int ret;
 
-	// __check_trade_time(); // TODO:
-
+	ret=__check_trade_time(); // TODO:
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol check trade time failed.\n", __FL__);
+		return FALSE;
+	}
+	
 	ret = __check_sge_instruction(req->instruction_id);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol check sge instruction failed.\n", __FL__);
@@ -172,6 +208,15 @@ int __addvol_update_trade_vol(const char *etf_code, long long quantity)
 {
 	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, quantity, 0);
 }
+int __update_client_quantity(const char *account_id,const char *pbu,long long quantity)
+{
+	tbl_client_t client;
+	int ret = get_client(g_core_data->db_conn,account_id, &client);
+	if (ret) {
+		return FALSE;
+	}
+	return update_client_quantity(g_core_data->db_conn, account_id, pbu, quantity, client.status);
+}
 
 static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 {
@@ -179,7 +224,8 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 
 	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__addvol_update_trade_vol(req->instrument_id, req->quantity);
-		// __update_client_quantity(); // TODO:
+		
+		__update_client_quantity(req->account_id,req->PBU,req->quantity); // TODO:
 	}
 
 	return TRUE;
