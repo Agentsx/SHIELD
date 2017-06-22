@@ -16,8 +16,7 @@ int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_rec
 int get_trade_time(sqlite3 *conn,array_t *a);
 int get_trade_list(sqlite3 *conn, map_t *h,const char *trade_date);
 int get_sge_instrctions(sqlite3 *conn, const char *trade_date, hash_t *h);
-int get_apply_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_vol);
-int get_redemption_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_vol);
+int get_trade_vol(sqlite3 *conn, const char *etf_code , tbl_trade_vol_t *trade_vol);
 int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info);
 int update_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code, long long apply, long long redemption);
 int update_client_quantity(sqlite3 *conn, const char *account_no, const char *pbu, long long quantity, int  status);

@@ -17,6 +17,7 @@
 #define CLIENT_OK  1
 
 #define TRADE_OK "00001"
+#define CUTVOL_OK "00002"
 
 extern char result_code[8];
 extern char result_desc[32];

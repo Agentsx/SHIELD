@@ -32,7 +32,7 @@ static int __package_cutvol_rsp_head(msg_head_t *h)
 	return TRUE;
 }
 
-int __check_client(cut_vol_req_t *req)
+int __cutvol_check_client(cut_vol_req_t *req)
 {
 	tbl_client_t client;
 	int ret = get_client(g_core_data->db_conn, req->account_id, &client);
@@ -57,10 +57,10 @@ int __check_client(cut_vol_req_t *req)
 	return TRUE;
 }
 
-int __check_limit(cut_vol_req_t *req)
+int __cutvol_check_limit(cut_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_redemption_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
+	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);
@@ -84,7 +84,7 @@ int __check_limit(cut_vol_req_t *req)
 	return TRUE;
 }
 
-static int __check_sge_instruction(const char *instruction_id)
+static int __cutvol_check_sge_instruction(const char *instruction_id)
 {
 	hash_t *h = hash_init(STR, NULL, NULL, NULL);
 	int ret = get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date, h);
@@ -110,7 +110,7 @@ ERROR:
     return FALSE;
 }
 
-static int __check_trade_time()
+static int __cutvol_check_trade_time()
 {
 	char cur_time[16];
 	time_t timep;  
@@ -150,13 +150,13 @@ static int __cutvol_req_check(cut_vol_req_t *req)
 {
 	int ret;
 
-	ret=__check_trade_time(); // TODO:
+	ret=__cutvol_check_trade_time(); // TODO:
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol check trade time failed.\n", __FL__);
 		return FALSE;
 	}
 	
-	ret = __check_sge_instruction(req->instruction_id);
+	ret = __cutvol_check_sge_instruction(req->instruction_id);
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol check sge instruction failed.\n", __FL__);
 		return FALSE;
@@ -168,13 +168,13 @@ static int __cutvol_req_check(cut_vol_req_t *req)
 		return FALSE;
 	}
 
-	ret = __check_client(req);
+	ret = __cutvol_check_client(req);
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol check client failed.\n", __FL__);
 		return FALSE;
 	}
 
-	ret = __check_limit(req);
+	ret = __cutvol_check_limit(req);
 	if (ret) {
 		printf("WARNING: [%s][%d] cut vol check client failed.\n", __FL__);
 		return FALSE;
@@ -192,7 +192,7 @@ int __cutvol_insert_info(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 	STRNCPY(trade_info.sge_instruc, req->instruction_id);
 	trade_info.recv_type = RECV;
 	trade_info.trans_no = req->msg_head.trans_no;
-	trade_info.msg_type = cut_VOL_REQ;
+	trade_info.msg_type = CUT_VOL_REQ;
 	STRNCPY(trade_info.etf_code, req->instrument_id);
 	STRNCPY(trade_info.client_acc, req->account_id);
 	STRNCPY(trade_info.pbu, req->PBU);
@@ -205,7 +205,7 @@ int __cutvol_insert_info(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 	STRNCPY(trade_info.result_code, rsp->processing_result);
 	STRNCPY(trade_info.result_desc, rsp->description);
 	trade_info.trans_no = rsp->msg_head.trans_no;
-	trade_info.msg_type = cut_VOL_RSP;
+	trade_info.msg_type = CUT_VOL_RSP;
 
 	insert_trade_info(g_core_data->db_conn, &trade_info);
 
@@ -214,9 +214,9 @@ int __cutvol_insert_info(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 
 int __cutvol_update_trade_vol(const char *etf_code, long long quantity)
 {
-	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, quantity, 0);
+	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, 0, quantity);
 }
-int __update_client_quantity(const char *account_id,const char *pbu,long long quantity)
+int __cutvol_update_client_quantity(const char *account_id,const char *pbu,long long quantity)
 {
 	tbl_client_t client;
 	int ret = get_client(g_core_data->db_conn,account_id, &client);
@@ -230,10 +230,10 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 {
 	__cutvol_insert_info(req, rsp);
 
-	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
+	if (strcmp(rsp->processing_result, CUTVOL_OK) == 0) {
 		__cutvol_update_trade_vol(req->instrument_id, req->quantity);
 		
-		__update_client_quantity(req->account_id,req->PBU,req->quantity); // TODO:
+		__cutvol_update_client_quantity(req->account_id,req->PBU,req->quantity); // TODO:
 	}
 
 	return TRUE;
@@ -263,7 +263,7 @@ int cut_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-		CALLOC_MSG(cut_vol_rsp, h->fd, cut_VOL_RSP);
+		CALLOC_MSG(cut_vol_rsp, h->fd, CUT_VOL_RSP);
 
 		__package_cutvol_rsp_head(&cut_vol_rsp->msg_head);
 
