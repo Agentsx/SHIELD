@@ -2,7 +2,11 @@
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "utils/log.h"
+#include "utils/utils.h"
 #include <string.h>
+
+map_t *istype_map;
+map_t *type_map;
 
 static int __resolve_msg(void *in, const char *msg, template_t *temp)
 {
@@ -33,22 +37,12 @@ static int __resolve_msg(void *in, const char *msg, template_t *temp)
 
 static int __get_type(const char *msg_type)
 {
-	if (!strcmp(msg_type, S201))
-		return LOGIN_REQ;
-	else if (!strcmp(msg_type, S205))
-		return BIZ_OVER_REQ;
-	else if (!strcmp(msg_type, S209))
-		return LOGOUT_REQ;
-	else if (!strcmp(msg_type, S211))
-		return PING_REQ;
-	else if (!strcmp(msg_type, A301))
-		return ADD_VOL_REQ;
-	else if (!strcmp(msg_type, A303))
-		return CUT_VOL_REQ;
-	else if (!strcmp(msg_type, A305))
-		return TRADE_QRY_REQ;
+    int  *type = NULL;
 
-	return -1;
+    if (map_get(istype_map, (void *)msg_type, (void **)&type))
+        return -1;
+    else 
+	    return *type;
 }
 
 static msg_head_t * __resolve_head(const char *msg)
@@ -63,47 +57,18 @@ static msg_head_t * __resolve_head(const char *msg)
 
 static void *__resolve_body(long long type, const char *body, size_t *len)
 {;
+    type_mapping_t *type_m = NULL;
+
+    if (map_get(type_map, (void *)&type, (void **)&type_m)) {
+		log_error("unkown message type [%lld].", type);
+		return NULL;
+    }
+
 	void *new = NULL;
-	switch (type) {
-		case LOGIN_REQ:
-			new = calloc(1, sizeof(login_req_t));
-			*len = sizeof(login_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, login_req_template);
-			break;
-		case BIZ_OVER_REQ:
-			new = calloc(1, sizeof(biz_over_req_t));
-			*len = sizeof(biz_over_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, biz_over_req_template);
-			break;
-		case LOGOUT_REQ:
-			new = calloc(1, sizeof(logout_req_t));
-			*len = sizeof(logout_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, logout_req_template);
-			break;
-		case PING_REQ:
-			new = calloc(1, sizeof(ping_req_t));
-			*len = sizeof(ping_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, ping_req_template);
-			break;
-		case ADD_VOL_REQ:
-			new = calloc(1, sizeof(add_vol_req_t));
-			*len = sizeof(add_vol_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, add_vol_req_template);
-			break;
-		case CUT_VOL_REQ:
-			new = calloc(1, sizeof(cut_vol_req_t));
-			*len = sizeof(cut_vol_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, add_vol_req_template);
-			break;
-		case TRADE_QRY_REQ:
-			new = calloc(1, sizeof(trade_qry_req_t));
-			*len = sizeof(trade_qry_req_t);
-			__resolve_msg((char *)new + sizeof(msg_head_t), body, trade_qry_req_template);
-			break;
-		default:
-			log_error("unkown message type [%lld].", type);
-			return NULL;
-	}
+	new = calloc(1, type_m->struct_len);
+	*len = type_m->struct_len;
+	__resolve_msg((char *)new + sizeof(msg_head_t), body, type_m->templ);
+
 	return new;
 }
 
@@ -196,73 +161,18 @@ char *__package_head(msg_head_t *head)
 
 char *__package_body(long long type, msg_head_t *h, size_t *len)
 {
-	char *msg = NULL;
 
-	switch (type) {
-	case LOGIN_RSP:
-		log_notice("package 'login rsp' body.");
-		msg = calloc(1, LOGIN_RSP_BODY_LEN + 1);
-		*len = LOGIN_RSP_BODY_LEN;
-		memset(msg, 0x20, LOGIN_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, login_rsp_template);
-		break;
-	case BIZ_OVER_RSP:
-		log_notice("package 'biz over rsp' body.");
-		msg = calloc(1, BIZ_OVER_RSP_BODY_LEN + 1);
-		*len = BIZ_OVER_RSP_BODY_LEN;
-		memset(msg, 0x20, BIZ_OVER_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, biz_over_rsp_template);
-		break;
-	case LOGOUT_RSP:
-		log_notice("package 'logout rsp' body.");
-		msg = calloc(1, LOGOUT_RSP_BODY_LEN + 1);
-		*len = LOGOUT_RSP_BODY_LEN;
-		// memset(msg, 0x20, LOGOUT_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, logout_rsp_template);
-		break;
-	case PING_REQ:
-		log_notice("package 'ping req' body.");
-		msg = calloc(1,PING_REQ_BODY_LEN + 1);
-		*len = PING_REQ_BODY_LEN;
-		memset(msg, 0x20, PING_REQ_BODY_LEN);
-		__package_msg(h + 1, msg, ping_req_template);		
-		break;
-	case PING_RSP:
-		log_notice("package 'ping rsp' body.");
-		msg = calloc(1, PING_RSP_BODY_LEN + 1);
-		*len = PING_RSP_BODY_LEN;
-		memset(msg, 0x20,PING_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, ping_rsp_template);		
-		break;
-	case ADD_VOL_RSP:
-		log_notice("package 'add vol rsp' body.");
-		msg = calloc(1, ADD_VOL_RSP_BODY_LEN + 1);
-		*len = ADD_VOL_RSP_BODY_LEN;
-		memset(msg, 0x20, ADD_VOL_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, add_vol_rsp_template);		
-		break;
-	case CUT_VOL_RSP:
-		log_notice("package 'cut vol rsp' body.");
-		msg = calloc(1, CUT_VOL_RSP_BODY_LEN + 1);
-		*len = CUT_VOL_RSP_BODY_LEN;
-		memset(msg, 0x20, CUT_VOL_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, cut_vol_rsp_template);		
-		break;
-	case TRADE_QRY_RSP:
-		log_notice("package 'qry rsp' body.");
-		msg = calloc(1,TRADE_QRY_RSP_BODY_LEN + 1);
-		*len = TRADE_QRY_RSP_BODY_LEN;
-		memset(msg, 0x20, TRADE_QRY_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, trade_qry_rsp_template);		
-		break;
-	default:
+    type_mapping_t *m = NULL;
+    if (map_get(type_map, (void *)&type, (void **)&m)) {
 		log_error("package msg error trade type [%lld].", type);
-		msg = calloc(1, LOGIN_RSP_BODY_LEN + 1);
-		*len = LOGIN_RSP_BODY_LEN;
-		memset(msg, 0x20, LOGIN_RSP_BODY_LEN);
-		__package_msg(h + 1, msg, login_rsp_template);	
-		return NULL;
-	}
+        return NULL;
+    }
+
+	char *msg = NULL;
+	msg = calloc(1, m->body_len + 1);
+	*len = m->body_len;
+	memset(msg, 0x20, m->body_len);
+	__package_msg(h + 1, msg, m->templ);
 
 	return msg;
 }
@@ -303,4 +213,26 @@ int package_msg(shield_head_t *head)
 	MIDDLE_PUSH_OUT(out);
 
 	return 0;
+}
+
+int middle_init()
+{
+    istype_map = map_init(STR, INT);
+    type_map = map_init(STR, POINTER);
+
+    int i;
+    for (i = 0; tm[i].itype != -1; ++i) {
+        if (map_put(istype_map, (void *)tm[i].stype, (void *)&tm[i].itype)) {
+            log_error("put istype_map err, k[%s] v[%d].", tm[i].stype, tm[i].itype);
+            return -1;
+        }
+        type_mapping_t *m = calloc(1, sizeof(type_mapping_t));
+        memcpy(m, &tm[i], sizeof(type_mapping_t));
+        if (map_put(type_map, tm[i].stype, m)) {
+            log_error("put type_map err, k[%s].", tm[i].stype);
+            return -1;
+        }
+    }
+
+    return 0;
 }

@@ -2,19 +2,7 @@
 #define __MIDDLE_H__
 
 #include "frame/frame.h"
-
-#define MSG_HEAD_LEN  180
-
-#define LOGIN_RSP_BODY_LEN  		63
-#define BIZ_OVER_RSP_BODY_LEN  		20
-#define LOGOUT_RSP_BODY_LEN   		0
-#define PING_REQ_BODY_LEN  			24
-#define PING_RSP_BODY_LEN  			24
-#define ADD_VOL_RSP_BODY_LEN    	99
-#define CUT_VOL_RSP_BODY_LEN    	99
-#define TRADE_QRY_RSP_BODY_LEN    	72
-
-
+#include "utils/map.h"
 
 typedef struct template_s {
 	int  len_in_msg;
@@ -54,6 +42,18 @@ extern template_t cut_vol_req_template[];
 extern template_t cut_vol_rsp_template[];
 extern template_t trade_qry_req_template[];
 extern template_t trade_qry_rsp_template[];
+
+typedef struct type_mapping_s {
+    char       stype[8];
+    int        itype;
+    int        struct_len;
+    int        body_len;
+    template_t *templ;
+} type_mapping_t;
+
+extern type_mapping_t tm[];
+extern map_t *istype_map;  /* key: str, val: int */
+extern map_t *type_map;    /* key: int, val: type_mapping_t */
 
 extern int resolve_msg(shield_head_t *head);
 extern int package_msg(shield_head_t *head);

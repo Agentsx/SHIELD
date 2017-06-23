@@ -137,7 +137,7 @@ static int __send_del_fd(int fd)
     h->magic_num = MAGIC_NUM;
     h->fd = fd;
     h->len = 0;
-    h->trade_type = DEL_FD;
+    h->trade_type = CMD_DEL_FD;
     g_svr->core->push_to_middle(h);
     return 0;
 }
@@ -213,19 +213,21 @@ static int __update_heart_beat(int fd)
 
 int core_dispatch(shield_head_t *head)
 {
-    if (head->trade_type == CLOCK_MSG)
+    if (head->trade_type == CMD_CLOCK_MSG)
         return __lock_msg_handle();
 
-    if (head->trade_type == ADD_FD)
+    if (head->trade_type == CMD_ADD_FD)
         return __add_fd_handle(head->fd);
 
-    if (head->trade_type == DEL_FD)
+    if (head->trade_type == CMD_DEL_FD)
         return __del_fd_handle(head->fd);
 
+    // check login
+
     msg_head_t *msg_h = (msg_head_t *)(head + 1); 
-    if (head->trade_type == ADD_VOL_REQ 
-        || head->trade_type == CUT_VOL_REQ
-        || head->trade_type == TRADE_QRY_REQ) {
+    if (head->trade_type == CMD_ADD_VOL_REQ 
+        || head->trade_type == CMD_CUT_VOL_REQ
+        || head->trade_type == CMD_TRADE_QRY_REQ) {
         if (msg_h->trans_no <= g_core_data->recv_trans_no)
             return TRUE;
     }

@@ -1,41 +1,39 @@
 #ifndef __TRADE_TYPE_H__
 #define __TRADE_TYPE_H__
 
-#include "frame/frame.h"
-
 #define MAX_BIZ_CMD    0x7F
 
-#define LOGIN_REQ      0x01
-#define LOGIN_RSP      0x02
-#define BIZ_OVER_REQ   0x03
-#define BIZ_OVER_RSP   0x04
-#define LOGOUT_REQ     0x05
-#define LOGOUT_RSP     0x06
-#define PING_REQ       0x07
-#define PING_RSP       0x08
-#define ADD_VOL_REQ    0x09
-#define ADD_VOL_RSP    0x0A
-#define CUT_VOL_REQ    0x0B
-#define CUT_VOL_RSP    0x0C
-#define TRADE_QRY_REQ  0x0D
-#define TRADE_QRY_RSP  0x0E
-#define ADD_FD         0xFD
-#define DEL_FD         0xFE
-#define CLOCK_MSG      0xFF
+#define CMD_LOGIN_REQ      0x01
+#define CMD_LOGIN_RSP      0x02
+#define CMD_BIZ_OVER_REQ   0x03
+#define CMD_BIZ_OVER_RSP   0x04
+#define CMD_LOGOUT_REQ     0x05
+#define CMD_LOGOUT_RSP     0x06
+#define CMD_PING_REQ       0x07
+#define CMD_PING_RSP       0x08
+#define CMD_ADD_VOL_REQ    0x09
+#define CMD_ADD_VOL_RSP    0x0A
+#define CMD_CUT_VOL_REQ    0x0B
+#define CMD_CUT_VOL_RSP    0x0C
+#define CMD_TRADE_QRY_REQ  0x0D
+#define CMD_TRADE_QRY_RSP  0x0E
+#define CMD_ADD_FD         0xFD
+#define CMD_DEL_FD         0xFE
+#define CMD_CLOCK_MSG      0xFF
 
-#define S201  "S201"
-#define S202  "S202"
-#define S205  "S205"
-#define S206  "S206"
-#define S209  "S209"
-#define S210  "S210"
-#define S211  "S211"
-#define S212  "S212"
-#define A301  "A301"
-#define A302  "A302"
-#define A303  "A303"
-#define A304  "A304"
-#define A305  "A305"
-#define A306  "A306"
+#define MT_LOGIN_REQ      "S201"
+#define MT_LOGIN_RSP      "S202"
+#define MT_BIZ_OVER_REQ   "S205"
+#define MT_BIZ_OVER_RSP   "S206"
+#define MT_LOGOUT_REQ     "S209"
+#define MT_LOGOUT_RSP     "S210"
+#define MT_PING_REQ       "S211"
+#define MT_PING_RSP       "S212"
+#define MT_ADDVOL_REQ     "A301"
+#define MT_ADDVOL_RSP     "A302"
+#define MT_CUTVOL_REQ     "A303"
+#define MT_CUTVOL_RSP     "A304"
+#define MT_TRADE_QRY_REQ  "A305"
+#define MT_TRADE_QRY_RSP  "A306"
 
 #endif

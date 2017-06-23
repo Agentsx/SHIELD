@@ -71,7 +71,7 @@ int __send_lock_msg()
 {
     shield_head_t *head = calloc(1, sizeof(shield_head_t));
     head->magic_num = MAGIC_NUM;
-    head->trade_type = CLOCK_MSG;
+    head->trade_type = CMD_CLOCK_MSG;
     g_svr->core->handler(head);
 	return 0;
 }
@@ -129,7 +129,7 @@ static void *__manage_routine(void *ctx)
 
 			if (h->magic_num == MAGIC_NUM) {
                 if (h->trade_type > MAX_BIZ_CMD) {
-                    if (h->trade_type == DEL_FD) {
+                    if (h->trade_type == CMD_DEL_FD) {
                         close(h->fd);
                         __push_del_fd(h->fd, tp->read_in);
                     }

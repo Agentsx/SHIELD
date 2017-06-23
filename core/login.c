@@ -1,5 +1,4 @@
 #include "core.h"
-#include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "err.h"
@@ -7,7 +6,6 @@
 #include "utils/array.h"
 #include "utils/log.h"
 #include "db_handler.h"
-#include <stdio.h>
 #include <string.h>
 
 static int __auth_check(const char *user_name, const char *password)
@@ -89,16 +87,16 @@ static int __send_rsp(shield_head_t *h, const tbl_trade_info_t *trade_info)
     } while (0)
 
     switch (trade_info->msg_type) {
-	case ADD_VOL_RSP: {
+	case CMD_ADD_VOL_RSP: {
             CALLOC_MSG(add_vol_rsp, h->fd, trade_info->msg_type);
-            __package_rsp_head(&add_vol_rsp->msg_head, A302, ADDVOL_RSP_LEN, ADDVOL_RSP_BODY_LEN);
+            __package_rsp_head(&add_vol_rsp->msg_head, MT_ADDVOL_RSP, ADD_VOL_RSP_BODY_LEN + MSG_HEAD_LEN, ADD_VOL_RSP_BODY_LEN);
             __package_trade_rsp_body(add_vol_rsp);
 
 	        PUSH_MSG(add_vol_rsp);
         }
-	case CUT_VOL_RSP: {
+	case CMD_CUT_VOL_RSP: {
             CALLOC_MSG(cut_vol_rsp, h->fd, trade_info->msg_type);
-            __package_rsp_head(&cut_vol_rsp->msg_head, A304, CUTVOL_RSP_LEN, CUTVOL_RSP_BODY_LEN);
+            __package_rsp_head(&cut_vol_rsp->msg_head, MT_CUTVOL_RSP, CUT_VOL_RSP_BODY_LEN + MSG_HEAD_LEN, CUT_VOL_RSP_BODY_LEN);
             __package_trade_rsp_body(cut_vol_rsp);
 
 	        PUSH_MSG(cut_vol_rsp);
@@ -157,9 +155,9 @@ int login_req_handler(shield_head_t *h)
 
 AFTER:
     {
-	    CALLOC_MSG(login_rsp, h->fd, LOGIN_RSP);
+	    CALLOC_MSG(login_rsp, h->fd, CMD_LOGIN_RSP);
 
-	    __package_rsp_head(&login_rsp->msg_head, S202, LOGIN_RSP_LEN, LOGIN_RSP_BODY_LEN);
+	    __package_rsp_head(&login_rsp->msg_head, MT_LOGIN_RSP, LOGIN_RSP_BODY_LEN + MSG_HEAD_LEN, LOGIN_RSP_BODY_LEN);
 
 	    login_rsp->result[0] = result_code[0];
 	    login_rsp->heart_bt_int = 0;

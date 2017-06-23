@@ -1,21 +1,22 @@
 #ifndef __TRADE_MSG_H_
 #define __TRADE_MSG_H_
 
-#define  LOGIN_RSP_LEN       243
-#define  LOGIN_RSP_BODY_LEN  63
+#define MSG_HEAD_LEN  180
 
-#define  LOGOUT_RSP_LEN      180
-#define  LOGOUT_RSP_BODY_LEN 0
-
-#define  ADDVOL_RSP_LEN      234
-#define  ADDVOL_RSP_BODY_LEN 54
-
-#define  CUTVOL_RSP_LEN      234
-#define  CUTVOL_RSP_BODY_LEN 54
-
-#define  QRY_RSP_LEN         246
-#define  QRY_RSP_BODY_LEN    66
-
+#define  LOGIN_REQ_BODY_LEN         66
+#define  LOGIN_RSP_BODY_LEN         63
+#define  BIZ_OVER_REQ_BODY_LEN  	20
+#define  BIZ_OVER_RSP_BODY_LEN  	20
+#define  LOGOUT_REQ_BODY_LEN        65
+#define  LOGOUT_RSP_BODY_LEN   		0
+#define  PING_REQ_BODY_LEN  		24
+#define  PING_RSP_BODY_LEN  		24
+#define  ADD_VOL_REQ_BODY_LEN       54
+#define  ADD_VOL_RSP_BODY_LEN    	99
+#define  CUT_VOL_REQ_BODY_LEN       54
+#define  CUT_VOL_RSP_BODY_LEN       99
+#define  TRADE_QRY_REQ_BODY_LEN     16
+#define  TRADE_QRY_RSP_BODY_LEN    	66
 
 #define  NONFIX         0
 #define  FIX            1

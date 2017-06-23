@@ -1,9 +1,7 @@
-#include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "db/db.h"
 #include "db_handler.h"
-#include "frame/frame.h"
 #include "include/tbl.h"
 #include "utils/utils.h"
 #include "utils/array.h"
@@ -12,17 +10,16 @@
 #include "err.h"
 #include "core.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 static int __package_addvol_rsp_head(msg_head_t *h)
 {
-	h->msg_len = ADDVOL_RSP_LEN; 
+	h->msg_len = ADD_VOL_RSP_BODY_LEN + MSG_HEAD_LEN; 
 	h->fix_length = NONFIX; 
-	h->rec_length = ADDVOL_RSP_BODY_LEN; 
+	h->rec_length = ADD_VOL_RSP_BODY_LEN; 
 	h->rec_no = 1; 
-	strncpy(h->msg_type, A302, sizeof(h->msg_type));
+	strncpy(h->msg_type, MT_ADDVOL_RSP, sizeof(h->msg_type));
 	h->trans_no = 0; 
 	h->signature_flag = NONSIGNATURED; 
 	h->encrypted = NONENCRYTED; 
@@ -193,7 +190,7 @@ int __addvol_insert_info(add_vol_req_t *req, add_vol_rsp_t *rsp)
 	STRNCPY(trade_info.sge_instruc, req->instruction_id);
 	trade_info.recv_type = RECV;
 	trade_info.trans_no = req->msg_head.trans_no;
-	trade_info.msg_type = ADD_VOL_REQ;
+	trade_info.msg_type = CMD_ADD_VOL_REQ;
 	STRNCPY(trade_info.etf_code, req->instrument_id);
 	STRNCPY(trade_info.client_acc, req->account_id);
 	STRNCPY(trade_info.pbu, req->PBU);
@@ -206,7 +203,7 @@ int __addvol_insert_info(add_vol_req_t *req, add_vol_rsp_t *rsp)
 	STRNCPY(trade_info.result_code, rsp->processing_result);
 	STRNCPY(trade_info.result_desc, rsp->description);
 	trade_info.trans_no = rsp->msg_head.trans_no;
-	trade_info.msg_type = ADD_VOL_RSP;
+	trade_info.msg_type = CMD_ADD_VOL_RSP;
 
 	insert_trade_info(g_core_data->db_conn, &trade_info);
 
@@ -259,7 +256,7 @@ int add_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-		CALLOC_MSG(add_vol_rsp, h->fd, ADD_VOL_RSP);
+		CALLOC_MSG(add_vol_rsp, h->fd, CMD_ADD_VOL_RSP);
 
 		__package_addvol_rsp_head(&add_vol_rsp->msg_head);
 

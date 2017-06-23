@@ -1,5 +1,4 @@
 #include "core.h"
-#include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
 #include "db_handler.h"
@@ -11,11 +10,11 @@
 
 static int __bizover_package_head(msg_head_t *h)
 {
-	h->msg_len = BIZOVER_RSP_LEN; 
+	h->msg_len = BIZ_OVER_RSP_BODY_LEN + MSG_HEAD_LEN; 
 	h->fix_length = NONFIX; 
-	h->rec_length = BIZOVER_RSP_BODY_LEN; 
+	h->rec_length = BIZ_OVER_RSP_BODY_LEN; 
 	h->rec_no = 1; 
-	strncpy(h->msg_type, S206, sizeof(h->msg_type));
+	strncpy(h->msg_type, MT_BIZ_OVER_RSP, sizeof(h->msg_type));
 	h->trans_no = 0; 
 	h->signature_flag = NONSIGNATURED; 
 	h->encrypted = NONENCRYTED; 
@@ -30,7 +29,7 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 	array_t *a = array_init(NULL);
 	ret = get_trade_count(g_core_data->db_conn , g_core_data->trade_date, a);
 	if (ret) {
-	    log_error("ERROR: [%s][%d] failed to find trade count !\n", __FL__);
+	    log_error("failed to find trade count !");
 	    return -1;
 	}
 
@@ -56,7 +55,7 @@ int  biz_over_req_handler(shield_head_t *h)
 
 	biz_over_req_t *req = (biz_over_req_t *)(h + 1);
    	
-	CALLOC_MSG(biz_over_rsp, h->fd, BIZ_OVER_RSP);
+	CALLOC_MSG(biz_over_rsp, h->fd, CMD_BIZ_OVER_RSP);
 
 	__bizover_package_head(&biz_over_rsp->msg_head);
 	

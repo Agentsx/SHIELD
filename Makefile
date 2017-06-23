@@ -6,15 +6,15 @@ OBJS = shield.o
 all: libs $(SVR_NAME)
 
 LIBRARY_PATH = -L$(ROOTPATH)/frame -lframe \
-       -L$(ROOTPATH)/middle -lmiddle \
-       -L$(ROOTPATH)/core -lcore \
-       -L$(ROOTPATH)/utils -lutils \
-       -L$(ROOTPATH)/db -ldb \
-       -L$(ROOTPATH)/libs -lsqlite3 \
-       -L$(ROOTPATH)/libs -lparson \
-       -L$(ROOTPATH)/libs -lzlog \
-       -ldl \
-       -lpthread
+	   -L$(ROOTPATH)/middle -lmiddle \
+	   -L$(ROOTPATH)/core -lcore \
+	   -L$(ROOTPATH)/utils -lutils \
+	   -L$(ROOTPATH)/db -ldb \
+	   -L$(ROOTPATH)/libs -lsqlite3 \
+	   -L$(ROOTPATH)/libs -lparson \
+	   -L$(ROOTPATH)/libs -lzlog \
+	   -ldl \
+	   -lpthread
 
 .PHONY: libs clean
 
@@ -30,6 +30,16 @@ $(SVR_NAME): $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
+
+install:
+	mkdir -p install/shield/db
+	cp shield    ./install/shield/
+	cp start.sh  ./install/shield/
+	cp -R libs   ./install/shield/
+	cp -R conf   ./install/shield/
+	cp db/SHIELD.DB ./install/shield/db/
+	cp db/init.sql  ./install/shield/db/
+
 
 clean:
 	rm -f $(OBJS) $(SVR_NAME)
