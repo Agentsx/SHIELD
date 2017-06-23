@@ -86,42 +86,42 @@ package_conf={
     #    "",#date_time
     #    ""#decription
     #],
-    #"addvol_req": [
-    #    "1",  # "msg_len[8]
-    #    "2   ",  # fix_length,
-    #    "3",  # fix_length
-    #    "4",  # recv_no
-    #    "5",  # msg_type
-    #    "6",  # trans_no
-    #    "",  # signature_flag
-    #    "",  # encrypted
-    #    "",  # resend_flag
-    #    "",  # reserved
-    #    "",  # signaturedata
-    #    "",# instruction_id
-    #    "",# instrument_id
-    #    "",# account_id
-    #    "",# PUB
-    #    ""# quantity
-    #],
-    #"cutvol_req": [
-    #    "1",  # "msg_len[8]
-    #    "2   ",  # fix_length,
-    #    "3",  # fix_length
-    #    "4",  # recv_no
-    #    "5",  # msg_type
-    #    "6",  # trans_no
-    #    "",  # signature_flag
-    #    "",  # encrypted
-    #    "",  # resend_flag
-    #    "",  # reserved
-    #    "",  # signaturedata
-    #    "",  # instruction_id
-    #    "",  # instrument_id
-    #    "",  # account_id
-    #    "",  # PUB
-    #    ""  # quantity
-    #],
+    "addvol_req": [
+        "234   ",#"msg_len[8]
+        "1",#fix_length,
+        "54    ",#fix_length
+        "0     ",#recv_no
+        "A301",#msg_type
+        "17              ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "ETF1707130000019",# instruction_id
+        "518880",# instrument_id
+        "123456    ",# account_id
+        "32156 ",# PUB
+        "300000          "# quantity
+    ],
+    "cutvol_req": [
+        "234   ",#"msg_len[8]
+        "1",#fix_length,
+        "54    ",#fix_length
+        "0     ",#recv_no
+        "A303",#msg_type
+        "18              ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "ETF1707130000020",# instruction_id
+        "518880",# instrument_id
+        "123456    ",# account_id
+        "32156 ",# PUB
+        "300000          "# quantity
+    ],
     #"qry_req": [
     #    "1",  # "msg_len[8]
     #    "2   ",  # fix_length,
