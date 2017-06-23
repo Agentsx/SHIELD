@@ -32,6 +32,7 @@ $(SVR_NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
 
 install:
+	rm -rf ./install
 	mkdir -p install/shield/db
 	cp shield    ./install/shield/
 	cp start.sh  ./install/shield/
@@ -41,7 +42,6 @@ install:
 	cp db/init.sql  ./install/shield/db/
 	cp db/sqlite3   ./install/shield/db/
 
-
 clean:
 	rm -f $(OBJS) $(SVR_NAME)
 	@make -C frame  clean
@@ -49,3 +49,4 @@ clean:
 	@make -C core   clean
 	@make -C utils  clean
 	@make -C db     clean
+	rm -rf ./install

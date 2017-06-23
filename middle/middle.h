@@ -55,6 +55,7 @@ extern type_mapping_t tm[];
 extern map_t *istype_map;  /* key: str, val: int */
 extern map_t *type_map;    /* key: int, val: type_mapping_t */
 
+extern int middle_init();
 extern int resolve_msg(shield_head_t *head);
 extern int package_msg(shield_head_t *head);
 

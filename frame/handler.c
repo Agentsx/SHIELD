@@ -32,8 +32,9 @@ int init_core_handler(core_handler_t *core, int (*dispatch)(shield_head_t *head)
 	return 0;
 }
 
-int init_middle_handler(middle_handler_t *middle, int (*fin)(shield_head_t *), int (*fout)(shield_head_t *))
+int init_middle_handler(middle_handler_t *middle, int (*init)(), int (*fin)(shield_head_t *), int (*fout)(shield_head_t *))
 {
+    middle->init = init;
 	middle->handle_in = fin;
 	middle->handle_out = fout;
 	middle->push_in = middle_push_in;

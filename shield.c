@@ -35,17 +35,18 @@ int main(int argc, char *argv[])
 	}
 
 	g_svr->set_core(g_svr->core, core_dispatch);
-	g_svr->set_middle(g_svr->middle, resolve_msg, package_msg);
+	g_svr->set_middle(g_svr->middle, middle_init, resolve_msg, package_msg);
 	g_svr->set_persistent(g_svr->persistent, NULL);
 
 	server_set_core_init(core_init);
 
 	if (server_start() != 0) {
 		printf("ERROR: [%s][%d] start server error.\n", __FL__);
-		server_free();
-		return -1;
+        goto END;
 	}
     __scrawl();
 	server_join();
+END:
+    server_free();
 	return 0;
 }

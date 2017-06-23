@@ -63,6 +63,12 @@ int __socket_event_handler(int fd, struct epoll_event *event)
             __fd_add(connfd);
 			log_info("connect new fd [%d].", connfd);
 		}
+
+        shield_head_t *h = calloc(1, sizeof(shield_head_t));
+        h->magic_num = MAGIC_NUM;
+        h->trade_type = CMD_ADD_FD;
+        h->fd = connfd;
+        push_to(h, tp->middle_in);
     }
     return 0;
 }
@@ -130,6 +136,7 @@ static void *__manage_routine(void *ctx)
 			if (h->magic_num == MAGIC_NUM) {
                 if (h->trade_type > MAX_BIZ_CMD) {
                     if (h->trade_type == CMD_DEL_FD) {
+                        log_notice("close fd[%d]", h->fd);
                         close(h->fd);
                         __push_del_fd(h->fd, tp->read_in);
                     }
@@ -258,10 +265,17 @@ static void *__core_routine(void *ctx)
 		g_svr->running = 0;
         exit(1);
 	}
-    log_info("in core routine, some information to write.");
     shield_head_t *h;
     while (g_svr->running) {
         usleep(SLEEPTIME);
+
+	    gettimeofday(&tv_curr, NULL);
+        if (tv_curr.tv_sec - tv_last.tv_sec >= 1) {
+            tv_last.tv_sec = tv_curr.tv_sec;
+            tv_last.tv_usec = tv_curr.tv_usec;
+			__send_lock_msg();
+		}
+
         h = NULL;
         if (queue_pop(tp->core_in, (void **)&h))
 			continue;
@@ -278,17 +292,12 @@ static void *__core_routine(void *ctx)
 		}
     
         free(h);
-	    gettimeofday(&tv_curr, NULL);
-        if (tv_curr.tv_sec - tv_last.tv_sec >= 1) {
-            tv_last.tv_sec = tv_curr.tv_sec;
-            tv_last.tv_usec = tv_curr.tv_usec;
-			__send_lock_msg();
-		}
     }
 
     return NULL;
 }
 
+/*
 static void *__persistent_routine(void *ctx)
 {
     thread_begin("persistent");
@@ -313,11 +322,20 @@ static void *__persistent_routine(void *ctx)
     
     return NULL;
 }
+*/
 
 static void *__middle_routine(void *ctx)
 {
     thread_begin("middle");
-    shield_head_t *head;
+
+    int ret;
+	ret = g_svr->middle->init(g_svr->cfg);
+	if (ret) {
+		log_error("core init error.");	
+		g_svr->running = 0;
+        exit(1);
+	}
+    shield_head_t *head = NULL;
     while (1) {
         int ret;
         int counter = 5;
@@ -366,7 +384,7 @@ static void __run()
     pthread_create(&tp->read_tid, NULL, __read_routine, NULL);
     pthread_create(&tp->write_tid, NULL, __write_routine, NULL);
     pthread_create(&tp->core_tid, NULL, __core_routine, NULL);
-    pthread_create(&tp->persistent_tid, NULL, __persistent_routine, NULL);
+    /* pthread_create(&tp->persistent_tid, NULL, __persistent_routine, NULL); */
     pthread_create(&tp->middle_tid, NULL, __middle_routine, NULL);
 }
 
@@ -376,10 +394,24 @@ static void __join()
     pthread_join(tp->read_tid, NULL);
     pthread_join(tp->write_tid, NULL);
     pthread_join(tp->core_tid, NULL);
-    pthread_join(tp->persistent_tid, NULL);
+    /* pthread_join(tp->persistent_tid, NULL); */
     pthread_join(tp->middle_tid, NULL);
 }
 
+void destroy_thread_pool(thread_pool_t *tpl)
+{
+    if (tpl) {
+       if (tpl->read_in) queue_destroy(tpl->read_in);
+       if (tpl->read_out) queue_destroy(tpl->read_out);
+       if (tpl->write_in) queue_destroy(tpl->write_in);
+       if (tpl->middle_in) queue_destroy(tpl->middle_in);
+       if (tpl->middle_out) queue_destroy(tpl->middle_out);
+       if (tpl->core_in) queue_destroy(tpl->core_in);
+       if (tpl->core_out) queue_destroy(tpl->core_out);
+       if (tpl->persistent_in) queue_destroy(tpl->persistent_in);
+        free(tpl);
+    }
+}
 
 thread_pool_t *thread_pool_init()
 {
@@ -390,40 +422,46 @@ thread_pool_t *thread_pool_init()
 
     if ((tp->read_in = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->read_out = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->write_in = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->middle_in = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->middle_out = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->core_in = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
     if ((tp->core_out = queue_init()) == NULL) {
         log_fatal("queue init error.");
-        return NULL;
+        goto ERROR;
     }
+
+    /*
     if ((tp->persistent_in = queue_init()) == NULL) {
         log_fatal("queue init error.");
         return NULL;
     }
+    */
     
     pthread_key_create(&__thread_key, NULL);
 
     thread_begin("main");
 
     return tp;
+ERROR:
+    destroy_thread_pool(tp);
+    return NULL;
 }

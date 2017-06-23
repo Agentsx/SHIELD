@@ -273,11 +273,44 @@ int  map_put(map_t *m, void *key, void *val)
 
 int map_replace(map_t *m, void *key, void *val, void **oldval)
 {
+    unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
+    unsigned int pos = hash & (m->threshold - 1);
+
+    map_pair_t *p;
+    if ((p = __map_find(key, m->buckets[pos], m->match)) == NULL) {
+        map_put(m, key, val);
+        *oldval = NULL;
+    } else {
+        *oldval = p->val;
+        void *newval = __map_calloc_for(m->val_type, val);
+        p->val = newval;
+    }
+
     return 0;
 }
 
-int map_remove(map_t *m, void *key, void **oldval)
+int map_remove(map_t *m, void *key, map_pair_t **oldval)
 {
+    unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
+    int pos = hash & (m->threshold - 1);
+
+    map_pair_t *p = m->buckets[pos];
+    map_pair_t *p1 = p;
+    while (p) {
+        if (m->match(key, p->key))
+            break;
+        p1 = p;
+        p = p->next;
+    }
+
+    if (p != NULL) {
+        p1->next = p->next;
+        p->next = NULL;
+    }
+
+    *oldval = p;
+    
+    --m->size;
     return 0;
 }
 
@@ -307,7 +340,7 @@ void map_destroy_keys(void **keys)
     free(keys);
 }
 
-int map_get(map_t *m, void *key, void **val)
+int map_get(map_t *m, void *key, void **val) /* it's a bad idea to use val pointer dirctly */
 {
     unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
     int pos = hash & (m->threshold - 1);

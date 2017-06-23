@@ -33,7 +33,7 @@ map_t *map_init_with_cap(int key_type, int val_type, size_t capacity);
 void map_destroy(map_t *h);
 int  map_put(map_t *h, void *key, void *val);
 int  map_get(map_t *h, void *key, void **val);
-int  map_remove(map_t *h, void *key, void **oldval);
+int  map_remove(map_t *h, void *key, map_pair_t **oldval);
 void **map_keys(map_t *h, size_t *size);
 int  map_replace(map_t *h, void *key, void *val, void **oldval);
 size_t  map_count(map_t *h);

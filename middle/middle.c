@@ -39,28 +39,27 @@ static int __get_type(const char *msg_type)
 {
     int  *type = NULL;
 
+    log_debug("msg_type[%s].", msg_type);
     if (map_get(istype_map, (void *)msg_type, (void **)&type))
         return -1;
-    else 
+    else {
+        log_debug("get type from map[%d].", *type);
 	    return *type;
+    }
 }
 
-static msg_head_t * __resolve_head(const char *msg)
+int __resolve_head(const char *msg, msg_head_t *h)
 {
-	msg_head_t *h = calloc(1, sizeof(msg_head_t));
-
-	__resolve_msg(h, msg, head_template);
-
-	return h;
+	return __resolve_msg(h, msg, head_template);
 }
 
 
-static void *__resolve_body(long long type, const char *body, size_t *len)
+static void *__resolve_body(int type, const char *body, size_t *len)
 {;
     type_mapping_t *type_m = NULL;
 
     if (map_get(type_map, (void *)&type, (void **)&type_m)) {
-		log_error("unkown message type [%lld].", type);
+		log_error("unkown message type [%d].", type);
 		return NULL;
     }
 
@@ -80,25 +79,24 @@ int resolve_msg(shield_head_t *head)
     }
 
 	char *msg = (char *)(head + 1);
-	msg_head_t *h = __resolve_head(msg);
-	if (h == NULL) {
+	msg_head_t *h = calloc(1, sizeof(msg_head_t));
+    int ret = __resolve_head(msg, h);
+	if (ret) {
 		log_error("resolve msg head [%s] error.", msg);
-		return -1;
+		goto ERROR;
 	}
 
-	long long trade_type;
+	int trade_type;
 	if ((trade_type = __get_type(h->msg_type)) == -1) {
 		log_error("message type error [%s].", h->msg_type);
-		free(h);	
-		return -1;
+		goto ERROR;
 	}
 
 	size_t len;
 	void *b = __resolve_body(trade_type, msg + MSG_HEAD_LEN, &len);
 	if (b == NULL) {
-		free(h);
 		log_error("resolve msg body [%s] error.", msg + MSG_HEAD_LEN);
-		return -1;
+		goto ERROR;
 	}
 
 	memcpy(b, h, sizeof(msg_head_t));
@@ -115,8 +113,11 @@ int resolve_msg(shield_head_t *head)
 
 	MIDDLE_PUSH_IN(newh);
 	log_notice("middle resolve msg ok.");
+    return 0;
 
-	return 0;
+ERROR:
+    free(h);
+	return -1;
 }
 
 static int __package_msg(void *h, char *msg, template_t *temp)
@@ -179,7 +180,7 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 
 int package_msg(shield_head_t *head)
 {
-	log_notice("middle package msg been called.");
+	log_notice("middle package msg been called. cmd[%lld]", head->trade_type);
 
     if (head->trade_type > MAX_BIZ_CMD) {  // system msg
 	    MIDDLE_PUSH_OUT(head);
@@ -217,22 +218,48 @@ int package_msg(shield_head_t *head)
 
 int middle_init()
 {
+    log_notice("------middle init begin------");
     istype_map = map_init(STR, INT);
-    type_map = map_init(STR, POINTER);
+    type_map = map_init(INT, POINTER);
 
     int i;
     for (i = 0; tm[i].itype != -1; ++i) {
+        log_debug("stype[%s], itype[%d]", tm[i].stype, tm[i].itype);
         if (map_put(istype_map, (void *)tm[i].stype, (void *)&tm[i].itype)) {
             log_error("put istype_map err, k[%s] v[%d].", tm[i].stype, tm[i].itype);
-            return -1;
+            goto ERROR;
         }
         type_mapping_t *m = calloc(1, sizeof(type_mapping_t));
         memcpy(m, &tm[i], sizeof(type_mapping_t));
-        if (map_put(type_map, tm[i].stype, m)) {
+        if (map_put(type_map, (void *)&tm[i].itype, m)) {
             log_error("put type_map err, k[%s].", tm[i].stype);
-            return -1;
+            goto ERROR;
         }
     }
 
+    /* debug */
+    void **keys = NULL;
+    size_t size = 0;
+    keys = map_keys(type_map, &size);
+    if (keys == NULL)
+        log_error("keys null");
+
+    type_mapping_t *h;
+    for (i = 0; i < size; ++i) {
+        if (map_get(type_map, keys[i], (void **)&h)) {
+            log_error("get val error of key[%d].", *(int *)keys[i]);
+            goto ERROR;
+        } else {
+            log_debug("%s %d %d %d", h->stype, h->itype, h->struct_len, h->body_len); 
+        }
+    }
+    log_notice("------middle init end------");
+
     return 0;
+
+ERROR:
+    log_notice("------middle init end------");
+    map_destroy(istype_map);
+    map_destroy(type_map);
+    return -1;
 }

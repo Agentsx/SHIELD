@@ -36,5 +36,6 @@ typedef struct thread_pool_s {
 extern thread_pool_t *tp;
 
 thread_pool_t *thread_pool_init();
+void destroy_thread_pool(thread_pool_t *tpl);
 
 #endif

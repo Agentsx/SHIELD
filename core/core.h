@@ -53,6 +53,11 @@ extern char result_desc[32];
 	g_svr->core->push_to_middle(__##s);
 
 
+typedef struct handler_map_s {
+	int  type;
+	int  (*handler)(shield_head_t *h);
+} handler_map_t;
+
 extern handler_map_t g_hp[];
 extern map_t *fd_heart;
 

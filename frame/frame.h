@@ -17,11 +17,6 @@ typedef struct shield_head_s {
 	long long    trade_type;
 } shield_head_t;
 
-typedef struct handler_map_s {
-	int  type;
-	int  (*handler)(shield_head_t *h);
-} handler_map_t;
-
 typedef struct core_s {
 	int (*init)(map_t *cfg);
 	int (*push_to_middle)(shield_head_t *h);
@@ -30,6 +25,7 @@ typedef struct core_s {
 } core_handler_t;
 
 typedef struct middle_s {
+    int  (*init)();
 	int  (*handle_in)(shield_head_t *h);
 	int  (*handle_out)(shield_head_t *h);
 	int  (*push_in)(shield_head_t *h);
@@ -52,6 +48,7 @@ typedef struct svr_s {
 
 	int  (*set_core)(core_handler_t *core, int (*dispatch)(shield_head_t *head));
 	int  (*set_middle)(middle_handler_t *middle,
+                       int (*init)(),
                        int (*fin)(shield_head_t *),
                        int (*fout)(shield_head_t *));
 	int  (*set_persistent)(persistent_handler_t *persistent,

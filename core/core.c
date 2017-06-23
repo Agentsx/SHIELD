@@ -149,8 +149,8 @@ static int __send_heart_beat(int fd)
 
 static int __update_fd_login(int fd)
 {
-    void *p = NULL;
-    map_remove(g_core_data->login_list, (void *)&fd, (void **)&p);
+    map_pair_t *p = NULL;
+    map_remove(g_core_data->login_list, (void *)&fd, &p);
     if (p)
         free(p);
     return 0;
@@ -158,8 +158,8 @@ static int __update_fd_login(int fd)
 
 static int __del_fd_handle(int fd)
 {
-    void *p = NULL;
-    map_remove(fd_heart, (void *)&fd, (void **)&p);
+    map_pair_t *p = NULL;
+    map_remove(fd_heart, (void *)&fd, &p);
     if (p)
         free(p);
 
@@ -170,6 +170,7 @@ static int __del_fd_handle(int fd)
 
 static int __lock_msg_handle()
 {
+    log_notice("... lock msg recived ...");
     struct timeval curr;
     gettimeofday(&curr, NULL);
 
@@ -178,13 +179,24 @@ static int __lock_msg_handle()
     keys = map_keys(fd_heart, &size);
     size_t i;
     fd_heart_t *t;
+    log_debug("fd size[%ld].", size);
     for (i = 0; i < size; ++i) {
         if (map_get(fd_heart, keys[i], (void **)&t) == 0) {
             if (t->had_sent && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->lose_interval) {
+                log_notice("lose heart beat. delete fd[%d]", *(int *)keys[i]);
                 __del_fd_handle(*(int *)keys[i]);
                 __send_del_fd(*(int *)keys[i]);
-            } else if (t->had_sent == 0 && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->interval)
+            } else if (t->had_sent == 0 && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->interval) {
+                fd_heart_t *tmp = calloc(1, sizeof(fd_heart_t));
+                tmp->had_sent = 1;
+                tmp->last_beat.tv_sec = curr.tv_sec;
+                tmp->last_beat.tv_usec = curr.tv_usec;
+                void *p = NULL;
+                map_replace(fd_heart, keys[i], tmp, &p);
+                if (p) free(p);
+                log_notice("send heart beat. fd[%d]", *(int *)keys[i]);
                 __send_heart_beat(*(int *)keys[i]);
+            }
         }
     }
     return 0;
@@ -228,11 +240,15 @@ int core_dispatch(shield_head_t *head)
     if (head->trade_type == CMD_CLOCK_MSG)
         return __lock_msg_handle();
 
-    if (head->trade_type == CMD_ADD_FD)
+    if (head->trade_type == CMD_ADD_FD) {
+        log_notice("add fd[%d]", head->fd);
         return __add_fd_handle(head->fd);
+    }
 
-    if (head->trade_type == CMD_DEL_FD)
+    if (head->trade_type == CMD_DEL_FD) {
+        log_notice("del fd[%d]", head->fd);
         return __del_fd_handle(head->fd);
+    }
 
     if (head->trade_type != CMD_LOGIN_REQ) {
         if (__check_login(head->fd)) {

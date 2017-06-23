@@ -111,8 +111,7 @@ void server_join()
 void server_free()
 {
 	if (g_svr != NULL) {
-		if (g_svr->tp != NULL)
-			free(g_svr->tp);
+        destroy_thread_pool(g_svr->tp);
         map_destroy(g_svr->cfg);
 		free(g_svr);
 	}
