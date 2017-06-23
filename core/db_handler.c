@@ -246,6 +246,27 @@ ERROR:
     return -1;
 }
 
+int get_trade_count(sqlite3 *conn,const char *trade_date,array_t *a)
+{
+	char *temp = "select f_sge_instruc from t_trade_info where f_trade_date=%s;";
+    char sql[256];
+    snprintf(sql, sizeof(sql), temp, trade_date);
+    int ret = 0;
+    char *err_msg = NULL;
+	ret = db_exec_dql(conn, sql, &err_msg, a);
+	if (ret != 0) {
+		log_error("select trade info error. [%s]." , err_msg);	
+		goto ERROR;
+	}
+    array_destroy(a);
+    return 0;
+
+ERROR:
+    array_destroy(a);
+    return -1;
+}
+
+
 int get_trade_time(sqlite3 *conn,array_t *a)
 {
 	char *sql = "select * from t_trade_time;";

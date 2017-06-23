@@ -6,6 +6,7 @@
 #include <string.h>	
 #include <time.h> 
 #include <sys/time.h> 
+#include "utils/log.h"
 
 
 static int __package_ping_head(msg_head_t *h, const char *type, int msg_len, int body_len)
@@ -30,6 +31,12 @@ int ping_req_handler(shield_head_t *h)
 
     ping_req_t *ping_req = (ping_req_t *)(h + 1);
 	CALLOC_MSG(ping_rsp, h->fd, PING_RSP);
+
+	__package_ping_head(&ping_req->msg_head,S211, PING_REQ_BODY_LEN+MSG_HEAD_LEN, PING_REQ_BODY_LEN);
+	
+	struct timeval timenow;
+    gettimeofday( &timenow, NULL );
+	int now_time_ms=timenow.tv_usec/10000;
 
 	__package_ping_head(&ping_rsp->msg_head,S211, PING_RSP_BODY_LEN + MSG_HEAD_LEN, PING_RSP_BODY_LEN);
 
