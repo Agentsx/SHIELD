@@ -74,7 +74,7 @@ template_t ping_rsp_template[] = {
 };
 
 template_t add_vol_req_template[] = {
-	{16, 'S', 16},
+	{16, 'S', 24},
 	{6, 'S', 8},
 	{10, 'S', 16},
 	{6, 'S', 8},
@@ -94,7 +94,7 @@ template_t add_vol_rsp_template[] = {
 };
 
 template_t cut_vol_req_template[] = {
-	{16, 'S', 16},
+	{16, 'S', 24},
 	{6, 'S', 8},
 	{10, 'S', 16},
 	{6, 'S', 8},
