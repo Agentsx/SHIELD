@@ -1,5 +1,5 @@
 #include "array.h"
-#include <stdio.h>
+#include <string.h>
 
 void *array_get(array_t *a, size_t i)
 {
@@ -15,7 +15,11 @@ static int __array_resize(array_t *a)
         return -1;
 
     a->capacity <<= 1;
-    return realloc(a->data, a->capacity) == NULL ? -1 : 0;
+    void **new = (void **)calloc(a->capacity, sizeof(void *));
+    memcpy(new, a->data, a->size * sizeof(void *));
+    free(a->data);
+    a->data = new;
+    return 0;
 }
 
 int array_insert(array_t *a, void *d)
