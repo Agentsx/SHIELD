@@ -211,6 +211,18 @@ static int __update_heart_beat(int fd)
     return 0;
 }
 
+static int __check_login(int fd)
+{
+    int  *flag = NULL;
+    if (map_get(g_core_data->login_list, (void *)&fd, (void **)&flag))
+        return -1;   /* did not login */
+
+    if (*flag != 1)
+        return -1;
+
+    return 0;
+}
+
 int core_dispatch(shield_head_t *head)
 {
     if (head->trade_type == CMD_CLOCK_MSG)
@@ -222,7 +234,12 @@ int core_dispatch(shield_head_t *head)
     if (head->trade_type == CMD_DEL_FD)
         return __del_fd_handle(head->fd);
 
-    // check login
+    if (head->trade_type != CMD_LOGIN_REQ) {
+        if (__check_login(head->fd)) {
+            log_warn("did not login, discard msg.");
+            return 0;
+        }
+    }
 
     msg_head_t *msg_h = (msg_head_t *)(head + 1); 
     if (head->trade_type == CMD_ADD_VOL_REQ 
@@ -230,8 +247,9 @@ int core_dispatch(shield_head_t *head)
         || head->trade_type == CMD_TRADE_QRY_REQ) {
         if (msg_h->trans_no <= g_core_data->recv_trans_no)
             return TRUE;
+
+        g_core_data->recv_trans_no = msg_h->trans_no;
     }
-    g_core_data->recv_trans_no = msg_h->trans_no;
 
     __update_heart_beat(head->fd);
 
