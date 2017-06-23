@@ -38,19 +38,19 @@ int __cutvol_check_client(cut_vol_req_t *req)
 	tbl_client_t client;
 	int ret = get_client(g_core_data->db_conn, req->account_id, &client);
 	if (ret) {
-		log_error("ERROR: [%s][%d] get client[%s] info error. .\n" , __FL__, req->account_id);
+		log_error("get client[%s] info error. ." , req->account_id);
 		SET_RESULT(CLIENT_NOT_FOUND);
 		return FALSE;
 	}
 
 	if (client.status == 0) {
-		log_error("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, req->account_id);
+		log_error("client [%s] not in use." , req->account_id);
 		SET_RESULT(CLIENT_NOT_INUSE);
 		return FALSE;
 	}
 
 	if (strcmp(req->PBU, client.pbu)) {
-		log_error("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, req->account_id);
+		log_error("client [%s] not in use." , req->account_id);
 		SET_RESULT(PBU_ERROR);
 		return FALSE;
 	}
@@ -63,7 +63,7 @@ int __cutvol_check_limit(cut_vol_req_t *req)
 	tbl_trade_vol_t trade_vol;
 	int ret = get_trade_vol(g_core_data->db_conn, g_core_data->trade_date, req->instrument_id, &trade_vol);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
+		log_warn("cut vol get etf[%s] trade vol failed.", req->instrument_id);
 		SET_RESULT(SO_BAD);
 		return FALSE;
 	}
@@ -71,13 +71,13 @@ int __cutvol_check_limit(cut_vol_req_t *req)
     tbl_trade_list_t *tl = NULL;
     ret = map_get(g_core_data->trade_list, req->instrument_id, (void **)&tl);
     if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol get etf[%s] trade list.\n", __FL__, req->instrument_id);
+		log_warn("cut vol get etf[%s] trade list.", req->instrument_id);
 		SET_RESULT(SO_BAD);
         return FALSE ;
     }
 
 	if (tl->redemption_limit < req->quantity + trade_vol.redemption) {
-		log_warn("WARNING: [%s][%d] cut vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
+		log_warn("cut vol get etf[%s] trade vol failed.", req->instrument_id);
 		SET_RESULT(BEYOND_REDEMPTION_LIMIT);
 		return FALSE;
 	}
@@ -90,7 +90,7 @@ static int __cutvol_check_sge_instruction(const char *instruction_id)
 	hash_t *h = hash_init(STR, NULL, NULL, NULL);
 	int ret = get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date, h);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol get sge instructions failed.\n", __FL__);
+		log_warn("cut vol get sge instructions failed.");
         SET_RESULT(SO_BAD);
         goto ERROR;
 	}
@@ -98,7 +98,7 @@ static int __cutvol_check_sge_instruction(const char *instruction_id)
 	char *instr = NULL;
 	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol sge instructions already handled.\n", __FL__);
+		log_warn("cut vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
         goto ERROR;
     }
@@ -124,7 +124,7 @@ static int __cutvol_check_trade_time()
 	int ret = 0;
 	ret = get_trade_time(g_core_data->db_conn , a);
 	if (ret) {
-	    log_error("ERROR: [%s][%d] failed to find trade time !\n", __FL__);
+	    log_error("failed to find trade time !");
 	    return -1;
 	}
 
@@ -153,13 +153,13 @@ static int __cutvol_req_check(cut_vol_req_t *req)
 
 	ret=__cutvol_check_trade_time(); // TODO:
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol check trade time failed.\n", __FL__);
+		log_warn("cut vol check trade time failed.");
 		return FALSE;
 	}
 	
 	ret = __cutvol_check_sge_instruction(req->instruction_id);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol check sge instruction failed.\n", __FL__);
+		log_warn("cut vol check sge instruction failed.");
 		return FALSE;
 	}
 
@@ -171,13 +171,13 @@ static int __cutvol_req_check(cut_vol_req_t *req)
 
 	ret = __cutvol_check_client(req);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol check client failed.\n", __FL__);
+		log_warn("cut vol check client failed.");
 		return FALSE;
 	}
 
 	ret = __cutvol_check_limit(req);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol check client failed.\n", __FL__);
+		log_warn("cut vol check client failed.");
 		return FALSE;
 	}
 	return TRUE;
@@ -242,7 +242,7 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 
 int cut_vol_req_handler(shield_head_t *h)
 {
-	log_notice("TRACE: [%s][%d] cut vol handler called.\n", __FL__);
+	log_notice("cut vol handler called.");
 
 	CLEAR_RESULT();
 	
@@ -251,7 +251,7 @@ int cut_vol_req_handler(shield_head_t *h)
 	int ret;
 	ret = __cutvol_req_check(cut_vol_req);
 	if (ret) {
-		log_warn("WARNING: [%s][%d] cut vol check failed.\n", __FL__);
+		log_warn("cut vol check failed.");
 		goto AFTER;
 	}
 

@@ -32,12 +32,6 @@ int ping_req_handler(shield_head_t *h)
     ping_req_t *ping_req = (ping_req_t *)(h + 1);
 	CALLOC_MSG(ping_rsp, h->fd, PING_RSP);
 
-	__package_ping_head(&ping_req->msg_head,S211, PING_REQ_BODY_LEN+MSG_HEAD_LEN, PING_REQ_BODY_LEN);
-	
-	struct timeval timenow;
-    gettimeofday( &timenow, NULL );
-	int now_time_ms=timenow.tv_usec/10000;
-
 	__package_ping_head(&ping_rsp->msg_head,S211, PING_RSP_BODY_LEN + MSG_HEAD_LEN, PING_RSP_BODY_LEN);
 
 	STRNCPY(ping_rsp->date_time, ping_req->date_time);
@@ -61,7 +55,7 @@ int send_ping(int fd)
 
 	struct timeval timenow;
     gettimeofday( &timenow, NULL );
-	int now_time_ms=timenow.tv_usec/10000;
+	int now_time_ms = timenow.tv_usec/10000;
 
 	time_t timep;  
 	struct tm *p;  

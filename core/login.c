@@ -17,7 +17,7 @@ static int __auth_check(const char *user_name, const char *password)
     int ret;
     ret = get_user(g_core_data->db_conn, user_name, &user);
     if (ret) {
-	    log_warn("get user [%s] error.\n", user_name);
+	    log_warn("get user [%s] error.", user_name);
         SET_RESULT(USER_NOT_FOUND);
         return -1;
     }
@@ -29,7 +29,7 @@ static int __auth_check(const char *user_name, const char *password)
     }
 
     if (user.status != USER_OK) {
-	    log_warn("user_name[%s] status not ok.\n", user_name);
+	    log_warn("user_name[%s] status not ok.", user_name);
         SET_RESULT(USER_STATUS_ERR);
         return -1;
     }
