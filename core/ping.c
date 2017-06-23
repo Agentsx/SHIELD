@@ -27,7 +27,7 @@ static int __package_ping_head(msg_head_t *h, const char *type, int msg_len, int
 
 int ping_req_handler(shield_head_t *h)
 {
-	log_notice("ping handler called.");
+	log_notice("==ping handler begin==");
 
     ping_req_t *ping_req = (ping_req_t *)(h + 1);
 	CALLOC_MSG(ping_rsp, h->fd, CMD_PING_RSP);
@@ -38,6 +38,7 @@ int ping_req_handler(shield_head_t *h)
 	STRNCPY(ping_rsp->description, ping_req->description);
 		
 	PUSH_MSG(ping_rsp);
+	log_notice("==ping handler end==");
 
 	return 0;
 }
@@ -49,6 +50,7 @@ int ping_rsp_handler(shield_head_t *h)
 
 int send_ping(int fd)
 {
+    log_notice("==send ping begin==");
     CALLOC_MSG(ping_req, fd, CMD_PING_REQ);
 
     __package_ping_head(&ping_req->msg_head, MT_PING_REQ, PING_REQ_BODY_LEN+MSG_HEAD_LEN, PING_REQ_BODY_LEN);
@@ -66,5 +68,6 @@ int send_ping(int fd)
 	STRNCPY(ping_req->description, "ping req!");
 
 	PUSH_MSG(ping_req);
+    log_notice("==send ping end==");
     return 0;
 }

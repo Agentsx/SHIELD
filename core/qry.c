@@ -39,7 +39,7 @@ static int __trade_qry_handle(trade_qry_req_t *req, trade_qry_rsp_t *rsp)
 
 int  trade_qry_req_handler(shield_head_t *h)
 {
-	log_notice("Trade qry handler called.");
+	log_notice("==Trade qry handler begin==");
 
     trade_qry_req_t *req = (trade_qry_req_t *)(h + 1);
 
@@ -49,6 +49,7 @@ int  trade_qry_req_handler(shield_head_t *h)
     __trade_qry_handle(req, trade_qry_rsp);
 
 	PUSH_MSG(trade_qry_rsp);
+	log_notice("==Trade qry handler end==");
 
 	return 0;
 }

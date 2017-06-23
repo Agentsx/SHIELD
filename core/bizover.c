@@ -38,12 +38,11 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 
 	if(req->total_records < array_count(a)){
 		STRNCPY(rsp->tran_status, "1");
-	}
-	else if(req->total_records == array_count(a)){
+	} else if(req->total_records == array_count(a)){
 		STRNCPY(rsp->tran_status, "0");
-	}
-	else
+	} else {
 		STRNCPY(rsp->tran_status, "2");
+    }
 
     return 0;
 }
@@ -51,7 +50,7 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 
 int  biz_over_req_handler(shield_head_t *h)
 {
-	log_notice("TRACE: [%s][%d] biz over req handler called.\n", __FL__);
+	log_notice("==biz over req handler begin==");
 
 	biz_over_req_t *req = (biz_over_req_t *)(h + 1);
    	
@@ -61,9 +60,10 @@ int  biz_over_req_handler(shield_head_t *h)
 	
 	__biz_over_handle(req, biz_over_rsp);
 	
-	log_notice("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
+	log_notice("push to middle[%p].", g_svr->core->push_to_middle);
 
 	PUSH_MSG(biz_over_rsp);
+	log_notice("==biz over req handler end, rsp[%s]==", result_code);
 
 	return 0;
 }
