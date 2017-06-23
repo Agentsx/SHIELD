@@ -33,7 +33,7 @@ $(SVR_NAME): $(OBJS)
 
 install:
 	rm -rf ./install
-	mkdir -p install/shield/db
+	mkdir -p install/shield/db install/shield/log
 	cp shield    ./install/shield/
 	cp start.sh  ./install/shield/
 	cp -R libs   ./install/shield/
