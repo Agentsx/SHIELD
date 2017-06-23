@@ -2,7 +2,7 @@
 #include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
-#include <stdio.h>
+#include "utils/log.h"
 #include <string.h>
 
 static int __package_head(msg_head_t *h)
@@ -23,17 +23,18 @@ static int __package_head(msg_head_t *h)
 
 int logout_req_handler(shield_head_t *h)
 {
-	printf("TRACE: [%s][%d] login req handler called.\n", __FL__);
+	log_notice("login req handler called.");
 	
 	CALLOC_MSG(logout_rsp, h->fd, LOGOUT_RSP);
 
 	__package_head(&logout_rsp->msg_head);
-	
-	printf("TRACE: [%s][%d] logout rsp head package ok.\n", __FL__);
-	
-	printf("TRACE: [%s][%d] logout rsp body package ok.\n", __FL__);
-	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 
+    int login = 0;
+    void *p = NULL;
+    map_replace(g_core_data->login_list, (void *)&(h->fd), (void *)&login, (void **)&p);
+    if (p)
+        free(p);
+	
 	PUSH_MSG(logout_rsp);
 
 	return 0;

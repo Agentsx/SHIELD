@@ -149,20 +149,26 @@ int login_req_handler(shield_head_t *h)
 
     SET_RESULT(LOGIN_SUCCESS);
 
+    int login = 1;
+    void *p = NULL;
+    map_replace(g_core_data->login_list, (void *)&(h->fd), (void *)&login, (void **)&p);
+    if (p)
+        free(p);
+
 AFTER:
     {
-	CALLOC_MSG(login_rsp, h->fd, LOGIN_RSP);
+	    CALLOC_MSG(login_rsp, h->fd, LOGIN_RSP);
 
-	__package_rsp_head(&login_rsp->msg_head, S202, LOGIN_RSP_LEN, LOGIN_RSP_BODY_LEN);
+	    __package_rsp_head(&login_rsp->msg_head, S202, LOGIN_RSP_LEN, LOGIN_RSP_BODY_LEN);
 
-	login_rsp->result[0] = result_code[0];
-	login_rsp->heart_bt_int = 0;
-	strncpy(login_rsp->data_date, g_core_data->trade_date, sizeof(login_rsp->data_date));
-	login_rsp->begin_trans_no = 0;
-	strncpy(login_rsp->description, result_desc, sizeof(login_rsp->description));
-	login_rsp->connection_type[0] = 'G';
-	
-	PUSH_MSG(login_rsp);
+	    login_rsp->result[0] = result_code[0];
+	    login_rsp->heart_bt_int = 0;
+	    strncpy(login_rsp->data_date, g_core_data->trade_date, sizeof(login_rsp->data_date));
+	    login_rsp->begin_trans_no = 0;
+	    strncpy(login_rsp->description, result_desc, sizeof(login_rsp->description));
+	    login_rsp->connection_type[0] = 'G';
+	    
+	    PUSH_MSG(login_rsp);
     }
 
 	return 0;

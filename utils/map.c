@@ -271,7 +271,12 @@ int  map_put(map_t *m, void *key, void *val)
     return 0;
 }
 
-int map_replace(map_t *m, void *key, void *val)
+int map_replace(map_t *m, void *key, void *val, void **oldval)
+{
+    return 0;
+}
+
+int map_remove(map_t *m, void *key, void **oldval)
 {
     return 0;
 }

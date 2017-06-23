@@ -3,6 +3,8 @@
 
 #include "frame/frame.h"
 
+#define MAX_BIZ_CMD    0x7F
+
 #define LOGIN_REQ      0x01
 #define LOGIN_RSP      0x02
 #define BIZ_OVER_REQ   0x03
@@ -17,6 +19,9 @@
 #define CUT_VOL_RSP    0x0C
 #define TRADE_QRY_REQ  0x0D
 #define TRADE_QRY_RSP  0x0E
+#define ADD_FD         0xFD
+#define DEL_FD         0xFE
+#define CLOCK_MSG      0xFF
 
 #define S201  "S201"
 #define S202  "S202"

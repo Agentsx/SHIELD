@@ -6,11 +6,11 @@
 #include "utils/parsconf.h"
 #include "utils/utils.h"
 #include "utils/log.h"
+#include "utils/map.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -91,7 +91,7 @@ int server_init(char *cfg_file)
 	return 0;
 }
 
-int server_set_core_init(int (*init)(void *p))
+int server_set_core_init(int (*init)(map_t *p))
 {
 	g_svr->core->init = init;
 	return 0;

@@ -4,7 +4,7 @@
 #include "handler.h"
 #include "utils/utils.h"
 #include "utils/log.h"
-#include <stdio.h>
+#include "include/trade_type.h"
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -67,21 +67,18 @@ int __socket_event_handler(int fd, struct epoll_event *event)
     return 0;
 }
 
-int __send_heart_beat()
+int __send_lock_msg()
 {
-	log_info("send heart beat.");
-	
+    shield_head_t *head = calloc(1, sizeof(shield_head_t));
+    head->magic_num = MAGIC_NUM;
+    head->trade_type = CLOCK_MSG;
+    g_svr->core->handler(head);
 	return 0;
 }
 
 static void *__manage_routine(void *ctx)
 {
     thread_begin("manage");
-
-	struct timeval tv_last = { 0 };
-	struct timeval tv_curr = { 0 };
-
-	gettimeofday(&tv_last, NULL);
 
     int epfd = epoll_create(MAXFDS);
     struct epoll_event *events = calloc(MAXFDS, sizeof(struct epoll_event));
@@ -131,20 +128,19 @@ static void *__manage_routine(void *ctx)
 				continue;
 
 			if (h->magic_num == MAGIC_NUM) {
-				push_to(h, tp->write_in);
+                if (h->trade_type > MAX_BIZ_CMD) {
+                    if (h->trade_type == DEL_FD) {
+                        close(h->fd);
+                        __push_del_fd(h->fd, tp->read_in);
+                    }
+                } else {
+				    push_to(h, tp->write_in);
+                }
 			} else {
 				log_fatal("read from middle out error.");	
 				free(h);
 			}
-			gettimeofday(&tv_last, NULL);
 		}
-
-		gettimeofday(&tv_curr, NULL);
-		if (tv_curr.tv_sec - tv_last.tv_sec >= 40) {
-			__send_heart_beat();
-			gettimeofday(&tv_last, NULL);
-		}
-
 		usleep(SLEEPTIME);
     }
 
@@ -250,8 +246,13 @@ static void *__core_routine(void *ctx)
 {
     thread_begin("core");
 
+	struct timeval tv_last = { 0 };
+	struct timeval tv_curr = { 0 };
+
+	gettimeofday(&tv_last, NULL);
+
     int ret;
-	ret = g_svr->core->init(NULL);
+	ret = g_svr->core->init(g_svr->cfg);
 	if (ret) {
 		log_error("core init error.");	
 		g_svr->running = 0;
@@ -277,6 +278,12 @@ static void *__core_routine(void *ctx)
 		}
     
         free(h);
+	    gettimeofday(&tv_curr, NULL);
+        if (tv_curr.tv_sec - tv_last.tv_sec >= 1) {
+            tv_last.tv_sec = tv_curr.tv_sec;
+            tv_last.tv_usec = tv_curr.tv_usec;
+			__send_lock_msg();
+		}
     }
 
     return NULL;

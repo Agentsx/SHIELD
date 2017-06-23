@@ -23,11 +23,10 @@ typedef struct handler_map_s {
 } handler_map_t;
 
 typedef struct core_s {
-	int (*init)(void *p);
+	int (*init)(map_t *cfg);
 	int (*push_to_middle)(shield_head_t *h);
 	int (*push_to_persistent)(shield_head_t *h);
 	int (*handler)(shield_head_t *h);
-	int (*handlers[MAX_TYPE])(shield_head_t *h);
 } core_handler_t;
 
 typedef struct middle_s {
@@ -66,6 +65,6 @@ int  server_start();
 void server_join();
 void server_free();
 
-int server_set_core_init(int (*init)(void *p));
+int server_set_core_init(int (*init)(map_t *p));
 
 #endif

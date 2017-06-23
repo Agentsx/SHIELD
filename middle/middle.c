@@ -109,6 +109,11 @@ static void *__resolve_body(long long type, const char *body, size_t *len)
 
 int resolve_msg(shield_head_t *head)
 {
+    if (head->trade_type > MAX_BIZ_CMD) { // system msg
+	    MIDDLE_PUSH_IN(head);
+        return 0;
+    }
+
 	char *msg = (char *)(head + 1);
 	msg_head_t *h = __resolve_head(msg);
 	if (h == NULL) {
@@ -265,6 +270,11 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 int package_msg(shield_head_t *head)
 {
 	log_notice("middle package msg been called.");
+
+    if (head->trade_type > MAX_BIZ_CMD) {  // system msg
+	    MIDDLE_PUSH_OUT(head);
+        return 0;
+    }
 
 	char *h = __package_head((msg_head_t *)(head + 1));
 

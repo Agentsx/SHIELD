@@ -7,6 +7,8 @@
 #include "utils/map.h"
 #include "string.h"
 
+#include <sys/time.h>
+
 #define TRUE  0
 #define FALSE 1
 
@@ -52,14 +54,27 @@ extern char result_desc[32];
 
 
 extern handler_map_t g_hp[];
+extern map_t *fd_heart;
+
+typedef struct fd_heart_s {
+    int                had_sent;
+    struct timeval     last_beat;
+} fd_heart_t;
+
+typedef struct heart_beat_conf_s {
+    int                interval;
+    int                lose_interval;
+} heart_beat_conf_t;
 
 typedef struct core_data_s {
-	char       trade_date[16];
-	long long  recv_trans_no;
-	long long  send_trans_no;
-    int        biz_over_flag;
-	sqlite3    *db_conn;
-    map_t      *trade_list;
+	char               trade_date[16];
+	long long          recv_trans_no;
+	long long          send_trans_no;
+    int                biz_over_flag;
+	sqlite3            *db_conn;
+    map_t              *trade_list;
+    map_t              *login_list;
+    heart_beat_conf_t  *sse_heart_beat;
 } core_data_t;
 
 extern core_data_t *g_core_data;
@@ -74,5 +89,6 @@ int  ping_rsp_handler(shield_head_t *h);
 int  add_vol_req_handler(shield_head_t *h);
 int  cut_vol_req_handler(shield_head_t *h);
 int  trade_qry_req_handler(shield_head_t *h);
+int  send_ping(int fd);
 
 #endif
