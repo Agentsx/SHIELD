@@ -9,6 +9,10 @@
 #include <unistd.h>
 #include <getopt.h>
 
+static void __scrawl()
+{
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc != 3) {
@@ -30,7 +34,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	g_svr->set_core(g_svr->core, g_hp);
+	g_svr->set_core(g_svr->core, core_dispatch);
 	g_svr->set_middle(g_svr->middle, resolve_msg, package_msg);
 	g_svr->set_persistent(g_svr->persistent, NULL);
 
@@ -41,6 +45,7 @@ int main(int argc, char *argv[])
 		server_free();
 		return -1;
 	}
+    __scrawl();
 	server_join();
 	return 0;
 }

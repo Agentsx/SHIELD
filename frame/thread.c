@@ -22,17 +22,12 @@ static pthread_key_t __thread_key;
 
 log_category_t *__get_log_category()
 {
-    printf("__get_log_category been called.\n");
     return (log_category_t *)pthread_getspecific(__thread_key);
 }
 
 void thread_begin(const char *name)
 {
     log_category_t *c = log_get_category(name);    
-    if (c == NULL) {
-        printf("get c[%s] error.\n", name);
-        exit(1);
-    }
     pthread_setspecific(__thread_key, (void *)c);
     log_set_callback(__get_log_category);
     log_info("Thread begin.");

@@ -20,6 +20,7 @@ int get_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code , 
 int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info);
 int update_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code, long long apply, long long redemption);
 int update_client_quantity(sqlite3 *conn, const char *account_no, const char *pbu, long long quantity, int  status);
+int get_trade_result(sqlite3 *conn, const char *trade_date, const char *org_instruction, tbl_trade_info_t *t);
 
 
 #endif

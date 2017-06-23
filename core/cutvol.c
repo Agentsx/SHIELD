@@ -231,10 +231,10 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 {
 	__cutvol_insert_info(req, rsp);
 
-	if (strcmp(rsp->processing_result, CUTVOL_OK) == 0) {
+	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__cutvol_update_trade_vol(req->instrument_id, req->quantity);
 		
-		__cutvol_update_client_quantity(req->account_id,req->PBU,req->quantity); // TODO:
+		__cutvol_update_client_quantity(req->account_id,req->PBU,req->quantity);
 	}
 
 	return TRUE;
@@ -247,11 +247,6 @@ int cut_vol_req_handler(shield_head_t *h)
 	CLEAR_RESULT();
 	
 	cut_vol_req_t *cut_vol_req = (cut_vol_req_t *)(h + 1);
-
-	if (cut_vol_req->msg_head.trans_no <= g_core_data->recv_trans_no)
-		return TRUE;
-
-	g_core_data->recv_trans_no = cut_vol_req->msg_head.trans_no;
 
 	int ret;
 	ret = __cutvol_req_check(cut_vol_req);

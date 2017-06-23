@@ -48,14 +48,9 @@ int core_handler_exe(shield_head_t *h)
 	return 0;	
 }
 
-int init_core_handler(core_handler_t *core, handler_map_t *m)
+int init_core_handler(core_handler_t *core, int (*dispatch)(shield_head_t *head))
 {
-	int i;	
-	for (i = 0; m[i].type != 0 && m[i].handler != NULL; ++i) {
-		core->handlers[m[i].type] = m[i].handler;
-	}
-
-	core->handler = core_handler_exe;
+	core->handler = dispatch;
 	core->push_to_middle = core_push_to_middle;
 	core->push_to_persistent = core_push_to_persistent;
 	return 0;

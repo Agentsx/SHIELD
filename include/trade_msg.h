@@ -13,9 +13,12 @@
 #define  CUTVOL_RSP_LEN      234
 #define  CUTVOL_RSP_BODY_LEN 54
 
+#define  QRY_RSP_LEN         246
+#define  QRY_RSP_BODY_LEN    66
 
-#define  NONFIX 0
-#define  FIX    1
+
+#define  NONFIX         0
+#define  FIX            1
 #define  NONSIGNATURED  0
 #define  SIGNATURED     1
 #define  NONENCRYTED    0

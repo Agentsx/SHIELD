@@ -12,7 +12,7 @@ int db_conn_init(sqlite3 **conn)
 {
     char *s = NULL;
     if (map_get(g_svr->cfg, "db_name", (void *)&s)) {
-        printf("ERROR: [%s][%d] get db name from cfg error.\n", __FL__); 
+        log_error("get db name from cfg error.");
         return -1;
     }
 	return db_init(s, conn);
@@ -23,12 +23,13 @@ int get_trade_date(sqlite3 *conn, char *date)
 	char *sql = "select max(f_trade_date) as f_trade_date from t_trade_date;";
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
+    log_debug("%s", sql);
 
 	int ret = 0;
 	char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select trade date error. [%s].\n" , __FL__, err_msg);
+		log_error("select trade date error. [%s]." , err_msg);
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -58,13 +59,14 @@ int get_user(sqlite3 *conn, const char *name, tbl_user_t *user)
 
     char sql[256];
     snprintf(sql, sizeof(sql), temp, name);
+    log_debug("%s", sql);
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select user error. [%s].\n" , __FL__, err_msg);	
+		log_error("select user error. [%s]." , err_msg);	
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -104,13 +106,14 @@ int get_client(sqlite3 *conn, const char *acc_no, tbl_client_t *client)
 
     char sql[256];
     snprintf(sql, sizeof(sql), temp, acc_no);
+    log_debug("%s", sql);
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select user error. [%s].\n" , __FL__, err_msg);	
+		log_error("select user error. [%s]." , err_msg);	
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -155,13 +158,14 @@ int get_max_recv_no(sqlite3 *conn, const char *trade_date, long long *max_recv_n
 
     char sql[256];
     snprintf(sql, sizeof(sql), temp, trade_date);
+    log_debug("%s", sql);
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select max trans_no error. [%s].\n" , __FL__, err_msg);	
+		log_error("select max trans_no error. [%s]." , err_msg);	
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -250,7 +254,7 @@ int get_trade_time(sqlite3 *conn,array_t *a)
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select trade time error. [%s].\n" , __FL__, err_msg);	
+		log_error("select trade time error. [%s]." , err_msg);	
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -291,7 +295,7 @@ int get_trade_list(sqlite3 *conn, map_t *h, const char *trade_date)
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select trade info error. [%s].\n" , __FL__, err_msg);	
+		log_error("select trade info error. [%s]." , err_msg);	
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -326,6 +330,7 @@ int get_sge_instrctions(sqlite3 *conn, const char *trade_date, hash_t *h)
 	char *temp = "select f_sge_instruc from t_trade_info where f_trade_date = '%s';";
 	char sql[256];
 	snprintf(sql, sizeof(sql), temp, trade_date);
+	log_debug("%s", sql);
 
 	array_t *ia = array_init((array_item_destroy)map_destroy);
 	int ret = 0;
@@ -359,6 +364,7 @@ int get_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code , 
 	char *temp = "select * from t_trade_list where f_trade_date = '%s' and f_etf_code = '%s';";
 	char sql[256];
 	snprintf(sql, sizeof(sql), temp, trade_date, etf_code);
+	log_debug("%s", sql);
 
 	array_t *a = array_init((array_item_destroy)map_destroy);
 
@@ -366,7 +372,7 @@ int get_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code , 
 	char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("ERROR: [%s][%d] select  from t_trade_list error. [%s].\n" , __FL__, err_msg);
+		log_error("select  from t_trade_list error. [%s]." , err_msg);
 		goto ERROR;
 	}
 	if (array_count(a) == 0)
@@ -409,10 +415,11 @@ int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info)
 									 trade_info->quantity, \
 									 trade_info->result_code, \
 									 trade_info->result_desc);
+	log_debug("%s", sql);
 
 	char *err_msg;
 	if (db_exec_dml(conn, sql, &err_msg)) {
-		printf("ERROR: [%s][%d] insert into t_trade_info error. [%s].\n" , __FL__, err_msg);
+		log_error("insert into t_trade_info error. [%s]." , err_msg);
 		return -1;
 	}
 
@@ -425,10 +432,11 @@ int update_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code
 	             "where f_trade_date = '%s' and f_etf_code = '%s';";
 	char sql[256];
 	snprintf(sql, sizeof(sql), temp, apply, redemption);
+	log_debug("%s", sql);
 
 	char *err_msg;
 	if (db_exec_dml(conn, sql, &err_msg)) {
-		printf("ERROR: [%s][%d] update t_trade_vol error. [%s].\n" , __FL__, err_msg);
+		log_error("update t_trade_vol error. [%s]." , err_msg);
 		return -1;
 	}
     return 0;
@@ -440,11 +448,67 @@ int update_client_quantity(sqlite3 *conn, const char *account_no, const char *pb
 	             "where f_acc_no = '%s' ;";
 	char sql[256];
 	snprintf(sql, sizeof(sql), temp, pbu, quantity,status);
+	log_debug("%s", sql);
 
 	char *err_msg;
 	if (db_exec_dml(conn, sql, &err_msg)) {
-		printf("ERROR: [%s][%d] update t_client error. [%s].\n" , __FL__, err_msg);
+		log_error("update t_client error. [%s]." , err_msg);
 		return -1;
 	}
     return 0;
+}
+
+int get_trade_result(sqlite3 *conn, const char *trade_date, const char *org_instruction, tbl_trade_info_t *trade_info)
+{
+    char *temp = "select * from t_trade_info where f_trade_date = '%s' and f_sge_instruc = '%s' and f_recv_type = 1;";
+    char sql[256];
+    snprintf(sql, sizeof(sql), temp, trade_date, org_instruction);
+
+	log_debug("%s", sql);
+
+    char *err_msg;
+    int  ret;
+    array_t *a = array_init((array_item_destroy)map_destroy);
+    ret = db_exec_dql(conn, sql, &err_msg, a);
+    if (ret != 0) {
+        log_error("select  from t_trade_list error[%s].", err_msg);
+        goto ERROR;
+    }
+    if (array_count(a) == 0)
+        goto ERROR;
+
+    map_t *h = (map_t *)array_get(a, 0);
+
+	char *tmp = NULL;
+    trade_info = calloc(1, sizeof(tbl_trade_info_t));
+    map_get(h, "f_trade_date", (void **)&tmp);
+    strncpy(trade_info->trade_date, tmp, sizeof(trade_info->trade_date));
+    map_get(h, "f_sge_instruc", (void **)&tmp);
+    strncpy(trade_info->sge_instruc, tmp, sizeof(trade_info->sge_instruc));
+    map_get(h, "f_recv_type", (void **)&tmp);
+    trade_info->recv_type = atoi(tmp);
+    map_get(h, "f_trans_no", (void **)&tmp);
+    trade_info->trans_no = atol(tmp);
+    map_get(h, "f_msg_type", (void **)&tmp);
+    trade_info->msg_type = atoi(tmp);
+    map_get(h, "f_etf_code", (void **)&tmp);
+    strncpy(trade_info->etf_code, tmp, sizeof(trade_info->etf_code));
+    map_get(h, "f_client_acc", (void **)&tmp);
+    strncpy(trade_info->client_acc, tmp, sizeof(trade_info->client_acc));
+    map_get(h, "f_pbu", (void **)&tmp);
+    strncpy(trade_info->pbu, tmp, sizeof(trade_info->pbu));
+    map_get(h, "f_quantity", (void **)&tmp);
+    trade_info->quantity = atol(tmp);
+    map_get(h, "f_result_code", (void **)&tmp);
+    strncpy(trade_info->result_code, tmp, sizeof(trade_info->result_code));
+    map_get(h, "f_result_desc", (void **)&tmp);
+    strncpy(trade_info->result_desc, tmp, sizeof(trade_info->result_desc));
+    array_insert(a, (void *)trade_info);
+
+    array_destroy(a);
+    return 0;
+
+ERROR:
+    array_destroy(a);
+    return -1;
 }

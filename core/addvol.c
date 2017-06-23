@@ -234,7 +234,7 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__addvol_update_trade_vol(req->instrument_id, req->quantity);
 		
-		__addvol_update_client_quantity(req->account_id,req->PBU,req->quantity); // TODO:
+		__addvol_update_client_quantity(req->account_id,req->PBU,req->quantity);
 	}
 
 	return TRUE;
@@ -247,11 +247,6 @@ int add_vol_req_handler(shield_head_t *h)
 	CLEAR_RESULT();
 	
 	add_vol_req_t *add_vol_req = (add_vol_req_t *)(h + 1);
-
-	if (add_vol_req->msg_head.trans_no <= g_core_data->recv_trans_no)
-		return TRUE;
-
-	g_core_data->recv_trans_no = add_vol_req->msg_head.trans_no;
 
 	int ret;
 	ret = __addvol_req_check(add_vol_req);

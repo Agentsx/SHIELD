@@ -53,7 +53,7 @@ typedef struct svr_s {
 	middle_handler_t     *middle;
 	persistent_handler_t *persistent;
 
-	int  (*set_core)(core_handler_t *core, handler_map_t *m);
+	int  (*set_core)(core_handler_t *core, int (*dispatch)(shield_head_t *head));
 	int  (*set_middle)(middle_handler_t *middle,
                        int (*fin)(shield_head_t *),
                        int (*fout)(shield_head_t *));

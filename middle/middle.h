@@ -39,7 +39,21 @@ typedef struct template_s {
 #define MIDDLE_PUSH_OUT(h) \
 	g_svr->middle->push_out(h); 
 
-
+extern template_t head_template[];
+extern template_t login_req_template[];
+extern template_t login_rsp_template[];
+extern template_t biz_over_req_template[];
+extern template_t biz_over_rsp_template[];
+extern template_t logout_req_template[];
+extern template_t logout_rsp_template[];
+extern template_t ping_req_template[];
+extern template_t ping_rsp_template[];
+extern template_t add_vol_req_template[];
+extern template_t add_vol_rsp_template[];
+extern template_t cut_vol_req_template[];
+extern template_t cut_vol_rsp_template[];
+extern template_t trade_qry_req_template[];
+extern template_t trade_qry_rsp_template[];
 
 extern int resolve_msg(shield_head_t *head);
 extern int package_msg(shield_head_t *head);

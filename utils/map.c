@@ -253,11 +253,6 @@ int  map_put(map_t *m, void *key, void *val)
     unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
     unsigned int pos = hash & (m->threshold - 1);
 
-#ifdef DEBUG
-    if (m->key_type == STR) 
-        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
-#endif
-
     if (__map_find(key, m->buckets[pos], m->match) != NULL)
         return -1;
 
@@ -311,11 +306,6 @@ int map_get(map_t *m, void *key, void **val)
 {
     unsigned int hash = key == NULL ? 0 : __map_hash(m->hash(key));
     int pos = hash & (m->threshold - 1);
-
-#ifdef DEBUG
-    if (m->key_type == STR) 
-        printf("key[%s] threshold[%ld] hash[%d] pos[%d]\n", (char *)key, m->threshold, hash, pos);
-#endif
 
     map_pair_t *mp = __map_find(key, m->buckets[pos], m->match);
     if (mp == NULL)

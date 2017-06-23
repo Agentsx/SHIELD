@@ -156,9 +156,6 @@ static void __resize(hash_t *h)
     free(h->buckets);
     h->buckets = new_buckets;
     h->threshold = new_threshold;
-#ifdef DEBUG
-    printf("resize ok ....\n");
-#endif
 }
 
 hash_t *hash_init(int type,

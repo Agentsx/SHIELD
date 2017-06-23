@@ -2,7 +2,7 @@ include ../Makefile.bas
 
 LIB_TARG = libmiddle.a
 
-LIB_OBJS = middle.o
+LIB_OBJS = middle.o template.o
 
 $(LIB_TARG): $(LIB_OBJS)
 	$(AR) $(ARPARAM) $@ $(LIB_OBJS)

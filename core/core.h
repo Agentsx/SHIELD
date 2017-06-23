@@ -17,7 +17,8 @@
 #define CLIENT_OK  1
 
 #define TRADE_OK "00001"
-#define CUTVOL_OK "00002"
+#define QRY_OK   "00001"
+#define QRY_FAIL "10000"
 
 extern char result_code[8];
 extern char result_desc[32];
@@ -64,6 +65,7 @@ typedef struct core_data_s {
 extern core_data_t *g_core_data;
 
 int  core_init();
+int  core_dispatch(shield_head_t *h);
 int  login_req_handler(shield_head_t *h);
 int  biz_over_req_handler(shield_head_t *h);
 int  logout_req_handler(shield_head_t *h);
