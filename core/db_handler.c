@@ -500,7 +500,6 @@ int get_trade_result(sqlite3 *conn, const char *trade_date, const char *org_inst
     map_t *h = (map_t *)array_get(a, 0);
 
 	char *tmp = NULL;
-    trade_info = calloc(1, sizeof(tbl_trade_info_t));
     map_get(h, "f_trade_date", (void **)&tmp);
     strncpy(trade_info->trade_date, tmp, sizeof(trade_info->trade_date));
     map_get(h, "f_sge_instruc", (void **)&tmp);
@@ -523,7 +522,6 @@ int get_trade_result(sqlite3 *conn, const char *trade_date, const char *org_inst
     strncpy(trade_info->result_code, tmp, sizeof(trade_info->result_code));
     map_get(h, "f_result_desc", (void **)&tmp);
     strncpy(trade_info->result_desc, tmp, sizeof(trade_info->result_desc));
-    array_insert(a, (void *)trade_info);
 
     array_destroy(a);
     return 0;
