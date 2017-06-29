@@ -46,7 +46,7 @@ int login_req_handler(shield_head *h)
 	printf("TRACE: [%s][%d] login rsp head package ok.\n", __FL__);
 	login_rsp->result[0] = '0';
 	login_rsp->heart_bt_int = 0;
-	strncpy(login_rsp->data_date, g_data_date, sizeof(login_rsp->data_date));
+	strncpy(login_rsp->data_date, g_core_data->trade_date, sizeof(login_rsp->data_date));
 	login_rsp->begin_trans_no = 0;
 	strncpy(login_rsp->description, "login success", sizeof(login_rsp->description));
 	login_rsp->connection_type[0] = 'G';

@@ -1,6 +1,7 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
+#include "db/sqlite3/sqlite3.h"
 #include "frame/frame.h"
 
 #define CALLOC_MSG(s, ifd, type) \
@@ -16,11 +17,16 @@
 
 extern handler_map_t g_hp[];
 
-extern int  g_send_trans_no;
-extern char g_data_date[16];
+typedef struct core_data_s {
+	char trade_date[16];
+	int  recv_trans_no;
+	int  send_trans_no;
+	sqlite3 *db_conn;
+} core_data_t;
+
+extern core_data_t *g_core_data;
 
 int  core_init();
-
 int  login_req_handler(shield_head *h);
 int  biz_over_req_handler(shield_head *h);
 int  logout_req_handler(shield_head *h);
