@@ -45,5 +45,59 @@ typedef struct login_rsp_s {
 	char       connection_type[8];
 } login_rsp_t;
 
+typedef struct biz_over_rsp_s {
+	msg_head_t msg_head;
+	char 		bizCode[3];
+	long long	totalRecords;
+	char		tranStatus;
+
+} biz_over_rsp_t;
+typedef struct logout_rsp_s {
+	msg_head_t msg_head;
+} logout_rsp_t;
+
+typedef struct ping_req_s {
+	msg_head_t msg_head;
+	char 		dateTime[16];
+	char		description[8];
+} ping_req_t;
+
+typedef struct ping_rsp_s {
+	msg_head_t msg_head;
+	char 		dateTime[16];
+	char		description[8];
+} ping_rsp_t;
+
+typedef struct add_vol_rsp_s{
+	msg_head_t msg_head;
+	char	processingResult[5];
+	char	description[40];
+	char	orgInstructionId[16];
+	char	instrumentId[6];
+	char	accountId[10];
+	char	PBU[6];
+	char	quantity[16];
+
+}add_vol_rsp_t;
+
+typedef struct cut_vol_rsp_s{
+	msg_head_t msg_head;
+	char	processingResult[5];
+	char	description[40];
+	char	orgInstructionId[16];
+	char	instrumentId[6];
+	char	accountId[10];
+	char	PBU[6];
+	char	quantity[16];
+
+}cut_vol_rsp_t;
+
+typedef struct trade_qry_rsp_s{
+	msg_head_t msg_head;
+	char	processingResult[5];
+	char	orgInstructionId[16];
+	char	orgProcessingResult[5];
+	char 	orgDescription[40];
+}trade_qry_rsp_t;
 
 #endif
