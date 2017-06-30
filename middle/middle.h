@@ -5,7 +5,15 @@
 
 #define MSG_HEAD_LEN  180
 
-#define LOGIN_RSP_BODY_LEN  63
+#define LOGIN_RSP_BODY_LEN  		63
+#define BIZ_OVER_RSP_BODY_LEN  		20
+#define LOGOUT_RSP_BODY_LEN   		0
+#define PING_REQ_BODY_LEN  			24
+#define PING_RSP_BODY_LEN  			24
+#define ADD_VOL_RSP_BODY_LEN    	99
+#define CUT_VOL_RSP_BODY_LEN    	99
+#define TRADE_QRY_RSP_BODY_LEN    	72
+
 
 
 typedef struct template_s {
