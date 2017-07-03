@@ -32,11 +32,6 @@ int  trade_qry_req_handler(shield_head *h)
 	
 	printf("TRACE: [%s][%d] trade qry head package ok.\n", __FL__);
 
-	strncpy(trade_qry_rsp->processingResult, "00001", sizeof(trade_qry_rsp->processingResult));
-	strncpy(trade_qry_rsp->orgInstructionId, "", sizeof(trade_qry_rsp->orgInstructionId));
-	strncpy(trade_qry_rsp->orgProcessingResult, "", sizeof(trade_qry_rsp->orgProcessingResult));
-	strncpy(trade_qry_rsp->orgDescription, "", sizeof(trade_qry_rsp->orgDescription));
-
 	printf("TRACE: [%s][%d]trade qry rsp body package ok.\n", __FL__);
 	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(trade_qry_rsp);
