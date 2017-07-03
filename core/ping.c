@@ -27,7 +27,7 @@ static int __package_head(msg_head_t *h)
 int ping_req_handler(shield_head *h)
 {
 	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
-	
+	/*
 	CALLOC_MSG(ping_req, h->fd, PING_REQ);
 
 	__package_head(&ping_req->msg_head);
@@ -50,19 +50,19 @@ int ping_req_handler(shield_head *h)
 	printf("TRACE: [%s][%d]ping rsp body package ok.\n", __FL__);
 	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(ping_req);
-
+*/
 	return 0;
 }
 
 int ping_rsp_handler(shield_head *h)
 {
-	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
+	/*printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
 
 
 	
 	printf("TRACE: [%s][%d]ping rsp body package ok.\n", __FL__);
 	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(ping_rsp);
-
+*/
 	return 0;
 }
