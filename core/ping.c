@@ -27,7 +27,7 @@ static int __package_head(msg_head_t *h)
 int ping_req_handler(shield_head *h)
 {
 	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
-		
+	
 	CALLOC_MSG(ping_req, h->fd, PING_REQ);
 
 	__package_head(&ping_req->msg_head);
@@ -43,7 +43,7 @@ int ping_req_handler(shield_head *h)
 	time(&timep);  
 	p =localtime(&timep);
 
-	sprintf(ping_req->dateTime,"%d%d%d%d%d%d%d",\
+	sprintf(ping_req->date_time,"%d%d%d%d%d%d%d",\
 		 1900+p->tm_year,1+p->tm_mon,p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec,now_time_ms);
 	strncpy(ping_req->description, "ping req!", sizeof(ping_req->description));
 		
@@ -57,25 +57,7 @@ int ping_req_handler(shield_head *h)
 int ping_rsp_handler(shield_head *h)
 {
 	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
-		
-	CALLOC_MSG(ping_rsp, h->fd, PING_RSP);
 
-	__package_head(&ping_rsp->msg_head);
-	
-	printf("TRACE: [%s][%d] ping head package ok.\n", __FL__);
-	
-	struct timeval timenow;
-    gettimeofday( &timenow, NULL );
-	int now_time_ms=timenow.tv_usec/10000;
-
-	time_t timep;  
-	struct tm *p;  
-	time(&timep);  
-	p =localtime(&timep);
-
-	sprintf(ping_rsp->dateTime,"%d%d%d%d%d%d%d",\
-		 1900+p->tm_year,1+p->tm_mon,p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec,now_time_ms);
-	strncpy(ping_rsp->description, "ping rsp!", sizeof(ping_rsp->description));
 
 	
 	printf("TRACE: [%s][%d]ping rsp body package ok.\n", __FL__);
