@@ -9,16 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define LOGIN_OK  '0'
-#define LOGIN_ERR '1'
-
-#define CLEAR_RESULT() {result_code = '0'; memset(result_desc, 0, sizeof(result_desc));}
-
-#define CPY_RESULT_DESC(err) strncpy(result_desc, err, sizeof(result_desc))
-
-char result_code;
-char result_desc[32];
-
 static int __auth_check(const char *user_name, const char *password)
 {
     tbl_user_t user;
@@ -27,21 +17,20 @@ static int __auth_check(const char *user_name, const char *password)
     ret = get_user(g_core_data->db_conn, user_name, &user);
     if (ret) {
 	    printf("ERROR: [%s][%d] get user [%s] error.\n", __FL__, user_name);
-        CPY_RESULT_DESC(USER_NOT_FOUND);
+        SET_RESULT(USER_NOT_FOUND);
         return -1;
     }
 
     if (strcmp(password, user.password)) {
 	    printf("ERROR: [%s][%d] user_name[%s] wrong password[%s].\n", __FL__, user_name, password);
-        CPY_RESULT_DESC(WRONG_PASSWORD);
+        SET_RESULT(WRONG_PASSWORD);
         return -1;
     }
 
     if (user.status != USER_OK) {
 	    printf("ERROR: [%s][%d] user_name[%s] status not ok.\n", __FL__, user_name);
-        CPY_RESULT_DESC(USER_STATUS_ERR);
+        SET_RESULT(USER_STATUS_ERR);
         return -1;
-    
     }
 	return 0;
 }
@@ -152,12 +141,12 @@ int login_req_handler(shield_head_t *h)
 	int ret;
 
     ret = __login_check(login_req);
-	if (ret) {
-        result_code = LOGIN_ERR;
+	if (ret)
         goto AFTER;
-    }
 
     __trans_no_handler(h, login_req->begin_trans_no);
+
+    SET_RESULT(LOGIN_SUCCESS);
 
 AFTER:
     {
@@ -165,7 +154,7 @@ AFTER:
 
 	__package_rsp_head(&login_rsp->msg_head, S202, LOGIN_RSP_LEN, LOGIN_RSP_BODY_LEN);
 
-	login_rsp->result[0] = result_code;
+	login_rsp->result[0] = result_code[0];
 	login_rsp->heart_bt_int = 0;
 	strncpy(login_rsp->data_date, g_core_data->trade_date, sizeof(login_rsp->data_date));
 	login_rsp->begin_trans_no = 0;

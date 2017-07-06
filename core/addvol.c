@@ -9,25 +9,8 @@
 #include "utils/array.h"
 #include "core/err.h"
 
-
 #include <stdio.h>
 #include <string.h>
-
-
-#define TRUE 0
-#define FALSE 1
-
-#define ADDVOL_OK  "00001"
-#define ADDVOL_ERR "00000"
-
-#define ADDVOL_CLEAR_RESULT() {memset(process_result, 0, sizeof(process_result));\
-								memset(process_dscp, 0, sizeof(process_dscp));}
-
-#define ADDVOL_CPY_RESULT_DESC(err) strncpy(process_dscp, err, sizeof(process_dscp))
-
-char process_result[8];
-char process_dscp[40];
-
 
 static int __package_addvol_head(msg_head_t *h)
 {
@@ -43,102 +26,6 @@ static int __package_addvol_head(msg_head_t *h)
 	strncpy(h->reserved, "123", sizeof(h->reserved)); 
 	strncpy(h->signature_data, "123", sizeof(h->signature_data)); 
 	return 0;
-}
-
-static int get_sge_instrction(sqlite3 *conn,char * sge_instrction,array_t *aa)
-{
-	char *temp = "select * from t_trade_info where f_sge_instruc = %s;";
-	char sql[256];
-	snprintf(sql, sizeof(sql), temp,sge_instrction );
-
-	array_t *ia = array_init((array_item_destroy)map_destroy_keys);
-	int ret = 0;
-	char *err_msg = NULL;
-	ret = db_exec_dql(conn, sql, &err_msg, ia);
-	if (ret != 0) {
-		printf("ERROR: [%s][%d] select trade info error. [%s].\n" , __FL__, err_msg);	
-		goto ERROR;
-	}
-	if (array_count(ia) == 0) {
-		array_destroy(aa);
-		return FALSE;//未处理过
-	}
-	else {//已有记录
-		int i;
-		map_t *h = NULL;
-		tbl_trade_info_t  *trade_info = NULL;
-		char *tmp = NULL;
-		for (i = 0; i < array_count(aa); ++i) {
-		    h = (map_t *)array_get(ia, i);
-		    trade_info = calloc(1, sizeof(tbl_trade_info_t));
-		    map_get(h, "f_trade_date", (void **)&tmp);
-		    strncpy(trade_info->trade_date, tmp, sizeof(trade_info->trade_date));
-		    map_get(h, "f_sge_instruc", (void **)&tmp);
-		    strncpy(trade_info->sge_instruc, tmp, sizeof(trade_info->sge_instruc));
-		    map_get(h, "f_recv_type", (void **)&tmp);
-		    trade_info->recv_type = atoi(tmp);
-		    map_get(h, "f_trans_no", (void **)&tmp);
-		    trade_info->trans_no = atol(tmp);
-		    map_get(h, "f_msg_type", (void **)&tmp);
-		    trade_info->msg_type = atoi(tmp);
-		    map_get(h, "f_etf_code", (void **)&tmp);
-		    strncpy(trade_info->etf_code, tmp, sizeof(trade_info->etf_code));
-		    map_get(h, "f_client_acc", (void **)&tmp);
-		    strncpy(trade_info->client_acc, tmp, sizeof(trade_info->client_acc));
-		    map_get(h, "f_pbu", (void **)&tmp);
-		    strncpy(trade_info->pbu, tmp, sizeof(trade_info->pbu));
-		    map_get(h, "f_quantity", (void **)&tmp);
-		    trade_info->quantity = atol(tmp);
-		    map_get(h, "f_result_code", (void **)&tmp);
-		    strncpy(trade_info->result_code, tmp, sizeof(trade_info->result_code));
-		    map_get(h, "f_result_desc", (void **)&tmp);
-		    strncpy(trade_info->result_desc, tmp, sizeof(trade_info->result_desc));
-		    array_insert(aa, (void *)trade_info);
-
-			array_destroy(aa);
-			return TRUE;
-		}
-
-	}
-	
-ERROR:
-	array_destroy(aa);
-	return -1;
-}
-
-long long __get_apply_limit(sqlite3 *conn,char * trade_date,char * etf_code)
-{
-	long long max_apply;
-	char *temp = "select f_apply_limit from t_trade_list where f_trade_date = %s and f_etf_code=%s ;";
-	char sql[256];
-	snprintf(sql, sizeof(sql), temp,trade_date,etf_code );
-
-	array_t *a = array_init((array_item_destroy)map_destroy_keys);
-
-	int ret = 0;
-	char *err_msg = NULL;
-	ret = db_exec_dql(conn, sql, &err_msg, a);
-	if (ret != 0) {
-		printf("ERROR: [%s][%d] select  from t_trade_list error. [%s].\n" , __FL__, err_msg);
-		goto ERROR;
-	}
-	if (array_count(a) == 0)
-		goto ERROR;
-
-	map_t *h = (map_t *)array_get(a, 0);
-	if (h == NULL)
-		goto ERROR;
-
-	char *tmp=NULL;
-	ret = map_get(h, "f_apply_limit", (void **)&tmp);
-	
-	if (ret != 0 || tmp == NULL)
-		goto ERROR;
-	max_apply = atol(tmp);
-	return max_apply;	
-ERROR:
-	array_destroy(a);
-	return -1;
 }
 
 #define STRNCPY(a, b) strncpy(a, b, sizeof(a))
@@ -183,6 +70,81 @@ int __insert_into_trade_info(sqlite3* conn,add_vol_req_t * req)
 	return 0;
 }
 
+int __check_client(add_vol_req_t *req)
+{
+	tbl_client_t client;
+	int ret = get_client(g_core_data->db_conn, req->account_id, &client);
+	if (ret) {
+		printf("ERROR: [%s][%d] get client[%s] info error. .\n" , __FL__, acc_id);
+		SET_RESULT(CLIENT_NOT_FOUND);
+		return FALSE;
+	}
+
+	if (client.status == 0) {
+		printf("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, acc_id);
+		SET_RESULT(CLIENT_NOT_INUSE);
+		return FALSE;
+	}
+
+	if (strcmp(req->pbu, client.pbu)) {
+		printf("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, acc_id);
+		SET_RESULT(PBU_ERROR);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+int __check_limit(add_vol_req_t *req)
+{
+	return TRUE;
+}
+
+static int __check_sge_instruction(const char *instruction_id)
+{
+	hash_t *h = hash_init(STR);
+	int ret = get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol get sge instructions failed.\n", __FL__);
+		return FALSE;
+	}
+	char *instr = NULL;
+	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
+	if (ret)
+		return FALSE;
+
+	return TRUE;
+}
+
+static int __addvol_req_check(add_vol_req_t *req)
+{
+	int ret;
+	ret = __check_sge_instruction(req->instruction_id);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol check sge instruction failed.\n", __FL__);
+		return FALSE;
+	}
+
+	tbl_trade_list_t *tl = NULL;
+	if (map_get(g_core_data->trade_list, req->etf_code, (void **)&tbl)) {
+		SET_RESULT(ETF_CODE_NOT_FOUND);
+		return FALSE;
+	}
+
+	ret = __check_client(req);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol check client failed.\n", __FL__);
+		return FALSE;
+	}
+
+	ret = __check_limit(req);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol check client failed.\n", __FL__);
+		return FALSE;
+	}
+	return TRUE;
+}
+
 int add_vol_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] add vol handler called.\n", __FL__);
@@ -191,13 +153,23 @@ int add_vol_req_handler(shield_head_t *h)
 	
 	add_vol_req_t *add_vol_req = (add_vol_req_t *)(h + 1);
 
+	if (add_vol_req->msg_head.trans_no <= g_core_data->recv_trans_no)
+		return 0;
+
+	int ret;
+	ret = __addvol_req_check(add_vol_req);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol check failed.\n", __FL__);
+		goto AFTER;
+	}
+
+	SET_RESULT(TRADE_SUCCESS);
+
+AFTER:
+	{
 	CALLOC_MSG(add_vol_rsp, h->fd, ADD_VOL_RSP);
 
 	__package_addvol_head(&add_vol_rsp->msg_head);
-
-	array_t *a = array_init(NULL);
-	int ret = get_sge_instrction(g_core_data->db_conn,add_vol_req->instruction_id,a);
-	
 	if (ret == FALSE) {
 		//未处理过，先入库，组报文
 		long long apply_limit=__get_apply_limit(g_core_data->db_conn,g_core_data->trade_date,add_vol_req->instrument_id);
@@ -236,7 +208,8 @@ int add_vol_req_handler(shield_head_t *h)
 		return -1;
 	}
 	array_destroy(a);
-	PUSH_MSG(add_vol_rsp);	
+	PUSH_MSG(add_vol_rsp);
+	}
 	return 0;
 }
 	

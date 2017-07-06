@@ -97,6 +97,12 @@ ERROR:
     return -1;
 }
 
+int get_client(sqlite3 *conn, const char *acc_no, tbl_client_t *client)
+{
+
+    return 0;
+}
+
 int get_max_recv_no(sqlite3 *conn, const char *trade_date, long long *max_recv_no)
 {
     char *temp = "select max(f_trans_no) as f_trans_no from t_trade_info where f_trade_date = '%s' and f_recv_type = %d;";
@@ -229,5 +235,74 @@ int get_trade_list(sqlite3 *conn, map_t *h, const char *trade_date)
 ERROR:
     array_destroy(a);
     return -1;
+}
+
+int get_sge_instrctions(sqlite3 *conn, const char *sge_instrction, const char *trade_date, hash_t *h)
+{
+	char *temp = "select f_sge_instruc from t_trade_info where f_trade_date = '%s';";
+	char sql[256];
+	snprintf(sql, sizeof(sql), temp, trade_date);
+
+	array_t *ia = array_init((array_item_destroy)map_destroy);
+	int ret = 0;
+	char *err_msg = NULL;
+	ret = db_exec_dql(conn, sql, &err_msg, ia);
+	if (ret != 0) {
+		printf("ERROR: [%s][%d] select trade info error. [%s].\n" , __FL__, err_msg);	
+		goto ERROR;
+	}
+
+	int i;
+	map_t *h = NULL;
+	tbl_trade_info_t  *trade_info = NULL;
+	char *tmp = NULL;
+	for (i = 0; i < array_count(ia); ++i) {
+		h = (map_t *)array_get(ia, i);
+		map_get(h, "f_sge_instruc", (void **)&tmp);
+		hash_insert(h, (void *)trade_info);
+	}
+
+    array_destroy(ia);
+    return 0;
+	
+ERROR:
+	array_destroy(ia);
+	return -1;
+}
+
+int get_apply_limit(sqlite3 *conn, char *trade_date, char *etf_code)
+{
+	long long max_apply;
+	char *temp = "select f_apply_limit from t_trade_list where f_trade_date = '%s' and f_etf_code = '%s';";
+	char sql[256];
+	snprintf(sql, sizeof(sql), temp, trade_date, etf_code);
+
+	array_t *a = array_init((array_item_destroy)map_destroy);
+
+	int ret = 0;
+	char *err_msg = NULL;
+	ret = db_exec_dql(conn, sql, &err_msg, a);
+	if (ret != 0) {
+		printf("ERROR: [%s][%d] select  from t_trade_list error. [%s].\n" , __FL__, err_msg);
+		goto ERROR;
+	}
+	if (array_count(a) == 0)
+		goto ERROR;
+
+	map_t *h = (map_t *)array_get(a, 0);
+	if (h == NULL)
+		goto ERROR;
+
+	char *tmp = NULL;
+	ret = map_get(h, "f_apply_limit", (void **)&tmp);
+	if (ret != 0 || tmp == NULL)
+		goto ERROR;
+
+	max_apply = atol(tmp);
+	return 0;
+
+ERROR:
+	array_destroy(a);
+	return -1;
 }
 

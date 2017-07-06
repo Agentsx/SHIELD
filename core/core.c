@@ -6,6 +6,9 @@
 
 core_data_t *g_core_data;
 
+char result_code[8];
+char result_desc[32];
+
 int core_init()
 {
 	g_core_data = calloc(1, sizeof(core_data_t));

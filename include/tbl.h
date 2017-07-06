@@ -7,7 +7,6 @@ typedef struct user {
     int       status;
 } tbl_user_t;
 
-
 typedef struct trade_info {
     char      trade_date[16];
     char      sge_instruc[24];
@@ -27,5 +26,12 @@ typedef struct trade_list {
     long long apply_limit;
     long long redemption_limit;
 } tbl_trade_list_t;
+
+typedef struct client {
+    char      acc_no[24];
+    char      pbu[16];
+    long long quantity;
+    int       status;
+} tbl_client_t;
 
 #endif

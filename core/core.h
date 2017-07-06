@@ -5,8 +5,17 @@
 #include "frame/frame.h"
 #include "include/tbl.h"
 
-#define USER_OK      1
-#define USER_NOT_OK  0
+#define TRUE 0
+#define FALSE 1
+
+extern char result_code[8];
+extern char result_desc[32];
+
+#define CLEAR_RESULT {result_code = 0; memset(result_desc, 0, sizeof(result_desc));}
+#define SET_RESULT(code, desc) { \
+	strncpy(result_code, code, sizeof(result_code); \
+	strncpy(result_desc, desc, sizeof(result_desc)); \
+}
 
 #define CALLOC_MSG(s, ifd, type) \
 	shield_head_t *__##s = calloc(1, sizeof(shield_head_t) + sizeof(s##_t)); \
