@@ -112,6 +112,9 @@ ERROR:
 static int __addvol_req_check(add_vol_req_t *req)
 {
 	int ret;
+
+	__check_trade_time(); // TODO:
+
 	ret = __check_sge_instruction(req->instruction_id);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol check sge instruction failed.\n", __FL__);
@@ -177,8 +180,10 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 {
 	__addvol_insert_info(req, rsp);
 
-	if (strcmp(rsp->processing_result, TRADE_OK) == 0)
+	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__addvol_update_trade_vol(req->instrument_id, req->quantity);
+		__update_client_quantity(); // TODO:
+	}
 
 	return TRUE;
 }
