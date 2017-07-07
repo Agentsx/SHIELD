@@ -13,5 +13,7 @@
 #define CLIENT_NOT_FOUND       "00003", "client not found"
 #define CLIENT_NOT_FOUND       "00004", "client not in use"
 #define PBU_ERROR              "00005", "pbu error"
+#define SO_BAD                 "00006", "Internal fault"
+#define BEYOND_APPLY_LIMIT     "00007", "beyond apply limit"
 
 #endif

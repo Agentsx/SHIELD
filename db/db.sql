@@ -43,3 +43,11 @@ create table t_trade_list (
 	f_redemp_limit bigint not null,
 	primary key(f_trade_date, f_etf_code)
 );
+
+create table t_trade_vol (
+	f_trade_date   varchar(8) not null,
+	f_etf_code     varchar(10) not null,
+	f_apply        bigint,
+	f_redemption   bigint,
+	primary key(f_trade_date, f_etf_code)
+);

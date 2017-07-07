@@ -5,16 +5,24 @@
 #include "frame/frame.h"
 #include "include/tbl.h"
 
-#define TRUE 0
+#define TRUE  0
 #define FALSE 1
+
+#define RECV   0
+#define SEND   1
+
+#define TRADE_OK "00001"
 
 extern char result_code[8];
 extern char result_desc[32];
 
+
+#define STRNCPY(a, b) strncpy(a, b, sizeof(a))
+
 #define CLEAR_RESULT {result_code = 0; memset(result_desc, 0, sizeof(result_desc));}
 #define SET_RESULT(code, desc) { \
-	strncpy(result_code, code, sizeof(result_code); \
-	strncpy(result_desc, desc, sizeof(result_desc)); \
+	STRNCPY(result_code, code); \
+	STRNCPY(result_desc, desc); \
 }
 
 #define CALLOC_MSG(s, ifd, type) \

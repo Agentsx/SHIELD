@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int __package_addvol_head(msg_head_t *h)
+static int __package_addvol_rsp_head(msg_head_t *h)
 {
 	h->msg_len = ADDVOL_RSP_LEN; 
 	h->fix_length = NONFIX; 
@@ -25,48 +25,6 @@ static int __package_addvol_head(msg_head_t *h)
 	h->resend_flag = 0; 
 	strncpy(h->reserved, "123", sizeof(h->reserved)); 
 	strncpy(h->signature_data, "123", sizeof(h->signature_data)); 
-	return 0;
-}
-
-#define STRNCPY(a, b) strncpy(a, b, sizeof(a))
-
-static int __send_addvol_rsp(shield_head_t *h, const tbl_trade_info_t *trade_info)
-{
-#define __package_trade_rsp_body(rsp) \
-	do { \
-		STRNCPY(rsp->processing_result, trade_info->result_code); \
-		STRNCPY(rsp->description, trade_info->result_desc); \
-		STRNCPY(rsp->org_instruction_id, trade_info->sge_instruc); \
-		STRNCPY(rsp->instrument_id, trade_info->etf_code); \
-		STRNCPY(rsp->account_id, trade_info->client_acc); \
-		STRNCPY(rsp->PBU, trade_info->pbu); \
-		rsp->quantity = trade_info->quantity; \
-		} while (0)
-
-	return 0;
-}
-int __insert_into_trade_info(sqlite3* conn,add_vol_req_t * req)
-{
-	char *temp = "insert into t_trade_info values(%s%s%d%d%d%s%s%s%ld%s%s) ;";
-	char sql[256];
-	char *err_msg = NULL;
-	int ret=0;
-	snprintf(sql, sizeof(sql), temp,g_core_data->trade_date,\
-							req->instruction_id,\
-							0,\
-							req->msg_head.trans_no,\
-							req->msg_head.msg_type,\
-							req->instrument_id,\
-							req->account_id,\
-							req->PBU,\
-							req->quantity,\
-							process_result,\
-							process_dscp);
-	ret=db_exec_dml(conn, sql, &err_msg);
-	if (ret != 0) {
-		printf("ERROR: [%s][%d] insert into trade info error. [%s].\n" , __FL__, err_msg);	
-		return -1;
-	}
 	return 0;
 }
 
@@ -86,7 +44,7 @@ int __check_client(add_vol_req_t *req)
 		return FALSE;
 	}
 
-	if (strcmp(req->pbu, client.pbu)) {
+	if (strcmp(req->PBU, client.pbu)) {
 		printf("ERROR: [%s][%d] client [%s] not in use.\n" , __FL__, acc_id);
 		SET_RESULT(PBU_ERROR);
 		return FALSE;
@@ -97,6 +55,20 @@ int __check_client(add_vol_req_t *req)
 
 int __check_limit(add_vol_req_t *req)
 {
+	tbl_trade_vol_t trade_vol;
+	int ret = get_trade_vol(g_core_data->db_conn, req->etf_code, &trade_vol);
+	if (ret) {
+		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, etf_code);
+		SET_RESULT(SO_BAD);
+		return FALSE;
+	}
+
+	if (g_core_data->apply_limit < req->quantity + trade_vol->apply) {
+		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, etf_code);
+		SET_RESULT(BEYOND_APPLY_LIMIT);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -145,16 +117,62 @@ static int __addvol_req_check(add_vol_req_t *req)
 	return TRUE;
 }
 
+int __addvol_insert_info(add_vol_req_t *req, add_vol_rsp_t *rsp)
+{
+	tbl_trade_info_t trade_info;
+	memset(trade_info, 0, sizeof(tbl_trade_info_t));
+
+	/* req */
+	STRNCPY(trade_info->trade_date, g_core_data->trade_date);
+	STRNCPY(trade_info->sge_instruc, req->instruction_id);
+	trade_info->recv_type = RECV;
+	trade_info->trans_no = req->msg_head.trans_no;
+	trade_info->msg_type = ADD_VOL_REQ;
+	STRNCPY(trade_info->etf_code, req->etf_code);
+	STRNCPY(trade_info->client_acc, req->client_acc);
+	STRNCPY(trade_info->pbu, req->PBU);
+	trade_info->quantity = req->quantity;
+
+	insert_trade_info(g_core_data->db_conn, &trade_info);
+
+	/* rsp */
+	trade_info->recv_type = SEND;
+	STRNCPY(trade_info->result_code, rsp->processing_result);
+	STRNCPY(trade_info->result_desc, rsp->description);
+	trade_info->trans_no = rsp->msg_head.trans_no;
+	trade_info->msg_type = ADD_VOL_RSP;
+
+	insert_trade_info(g_core_data->db_conn, &trade_info);
+	return 0;
+}
+
+int __addvol_update_trade_vol(const char *etf_code, long long quantity)
+{
+	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, quantity, 0);
+}
+
+static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
+{
+	__addvol_insert_info(req, rsp);
+
+	if (strcmp(rsp->result_code, TRADE_OK) == 0)
+		__addvol_update_trade_vol(req->etf_code, req->quantity);
+
+	return 0;
+}
+
 int add_vol_req_handler(shield_head_t *h)
 {
 	printf("TRACE: [%s][%d] add vol handler called.\n", __FL__);
 
-	ADDVOL_CLEAR_RESULT();
+	CLEAR_RESULT();
 	
 	add_vol_req_t *add_vol_req = (add_vol_req_t *)(h + 1);
 
 	if (add_vol_req->msg_head.trans_no <= g_core_data->recv_trans_no)
 		return 0;
+
+	g_core_data->recv_trans_no = add_vol_req->msg_head.trans_no;
 
 	int ret;
 	ret = __addvol_req_check(add_vol_req);
@@ -167,48 +185,21 @@ int add_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-	CALLOC_MSG(add_vol_rsp, h->fd, ADD_VOL_RSP);
+		CALLOC_MSG(add_vol_rsp, h->fd, ADD_VOL_RSP);
 
-	__package_addvol_head(&add_vol_rsp->msg_head);
-	if (ret == FALSE) {
-		//未处理过，先入库，组报文
-		long long apply_limit=__get_apply_limit(g_core_data->db_conn,g_core_data->trade_date,add_vol_req->instrument_id);
-		if(apply_limit == -1){
-			strncpy(process_result , ADDVOL_ERR,sizeof(process_result));
-			ADDVOL_CPY_RESULT_DESC(APPLY_LIMIT_NOT_FOUND);			
-		}
-		else{
-			if(add_vol_req->quantity>apply_limit){
-				strncpy(process_result , ADDVOL_ERR,sizeof(process_result));
-				ADDVOL_CPY_RESULT_DESC(QUANTITY_ERROR);	
-			}
-			else{
-				strncpy(process_result , ADDVOL_OK,sizeof(process_result));
-			}
-		}
-		__insert_into_trade_info(g_core_data->db_conn,add_vol_req);
-		strncpy(add_vol_rsp->processing_result, process_result, sizeof(add_vol_rsp->processing_result));
-		strncpy(add_vol_rsp->description, process_dscp, sizeof(add_vol_rsp->description));
-		strncpy(add_vol_rsp->org_instruction_id, add_vol_req->instruction_id, sizeof(add_vol_rsp->org_instruction_id));
-		strncpy(add_vol_rsp->instrument_id, add_vol_req->instrument_id, sizeof(add_vol_rsp->instrument_id));
-		strncpy(add_vol_rsp->PBU, add_vol_req->PBU, sizeof(add_vol_rsp->PBU));
-		add_vol_rsp->quantity=add_vol_req->quantity;
-	}
-	
-	else if (ret == TRUE){
-		//处理过，返回第一次的处理结果，
-		int i;
-		tbl_trade_info_t *trade_info = NULL;
-		for (i = 0; i < array_count(a); ++i) {
-			trade_info = (tbl_trade_info_t *)array_get(a, i); 
-			__send_addvol_rsp(h, trade_info);
-		}
-	}
-	else{
-		return -1;
-	}
-	array_destroy(a);
-	PUSH_MSG(add_vol_rsp);
+		__package_addvol_rsp_head(&add_vol_rsp->msg_head);
+
+		STRNCPY(add_vol_rsp->processing_result, result_code);
+		STRNCPY(add_vol_rsp->description, result_desc);
+		STRNCPY(add_vol_rsp->org_instruction_id, add_vol_req->instruction_id);
+		STRNCPY(add_vol_rsp->instrument_id, add_vol_req->instrument_id);
+		STRNCPY(add_vol_rsp->PBU, add_vol_req->PBU);
+		STRNCPY(add_col_rsp->account_id, add_vol_req->account_id);
+		add_vol_rsp->quantity = add_vol_req->quantity;
+
+		__addvol_update_db(add_vol_req, add_vol_rsp);
+		
+		PUSH_MSG(add_vol_rsp);
 	}
 	return 0;
 }

@@ -34,4 +34,11 @@ typedef struct client {
     int       status;
 } tbl_client_t;
 
+typedef struct trade_vol {
+    char      trade_date[16];
+    char      etf_code[16];
+    long long apply;
+    long long redemption;
+} tbl_trade_vol_t;
+
 #endif

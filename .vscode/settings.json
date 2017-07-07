@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "frame.c": "cpp",
+        "trade_msg.h": "c",
+        "core.h": "c",
+        "sqlite3.h": "c",
+        "tbl.h": "c",
+        "frame.h": "c",
+        "parsconf.h": "c",
+        "err.h": "c",
+        "trade_type.h": "c"
+    }
+}
