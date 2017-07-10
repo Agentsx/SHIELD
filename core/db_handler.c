@@ -260,16 +260,16 @@ int get_trade_time(sqlite3 *conn,array_t *a)
 	tbl_trade_time_t  *trade_time = NULL;
 	char *tmp = NULL;
 	for (i = 0; i < array_count(ia); ++i) {
-			trade_time = calloc(1, sizeof(tbl_trade_time_t));
-			h = array_get(ia, i);
-			map_get(h, "f_seq", (void **)&tmp);
-			trade_time->seq = atoi(tmp);
-			map_get(h, "f_start_time", (void **)&tmp);
-			strncpy(trade_time->start_time, tmp, sizeof(trade_time->start_time));
-			map_get(h, "f_end_time", (void **)&tmp);
-			strncpy(trade_time->end_time, tmp, sizeof(trade_time->end_time));
-			array_insert(a, (void *)trade_time);
-		}
+		trade_time = calloc(1, sizeof(tbl_trade_time_t));
+		h = array_get(ia, i);
+		map_get(h, "f_seq", (void **)&tmp);
+		trade_time->seq = atoi(tmp);
+		map_get(h, "f_start_time", (void **)&tmp);
+		strncpy(trade_time->start_time, tmp, sizeof(trade_time->start_time));
+		map_get(h, "f_end_time", (void **)&tmp);
+		strncpy(trade_time->end_time, tmp, sizeof(trade_time->end_time));
+		array_insert(a, (void *)trade_time);
+	}
 
     array_destroy(a);
     return 0;
@@ -353,7 +353,7 @@ ERROR:
 	return -1;
 }
 
-int get_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_vol)
+int get_apply_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_vol)
 {
 	char *temp = "select * from t_trade_vol where f_trade_date = '%s' and f_etf_code = '%s';";
 	char sql[256];
@@ -380,13 +380,49 @@ int get_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_
 	if (ret != 0 || tmp == NULL)
 		goto ERROR;
 
-	max_apply = atol(tmp);
+	trade_vol->apply = atol(tmp);
 	return 0;
 
 ERROR:
 	array_destroy(a);
 	return -1;
 }
+
+int get_redemption_trade_vol(sqlite3 *conn, const char *trade_date, tbl_trade_vol_t *trade_vol)
+{
+	char *temp = "select * from t_trade_vol where f_trade_date = '%s' and f_etf_code = '%s';";
+	char sql[256];
+	snprintf(sql, sizeof(sql), temp, trade_date, etf_code);
+
+	array_t *a = array_init((array_item_destroy)map_destroy);
+
+	int ret = 0;
+	char *err_msg = NULL;
+	ret = db_exec_dql(conn, sql, &err_msg, a);
+	if (ret != 0) {
+		printf("ERROR: [%s][%d] select  from t_trade_list error. [%s].\n" , __FL__, err_msg);
+		goto ERROR;
+	}
+	if (array_count(a) == 0)
+		goto ERROR;
+
+	map_t *h = (map_t *)array_get(a, 0);
+	if (h == NULL)
+		goto ERROR;
+
+	char *tmp = NULL;
+	ret = map_get(h, "f_redemption_limit", (void **)&tmp);
+	if (ret != 0 || tmp == NULL)
+		goto ERROR;
+
+	trade_vol->redemption = atol(tmp);
+	return 0;
+
+ERROR:
+	array_destroy(a);
+	return -1;
+}
+
 
 int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info)
 {

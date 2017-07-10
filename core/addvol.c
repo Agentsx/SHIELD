@@ -60,7 +60,7 @@ int __check_client(add_vol_req_t *req)
 int __check_limit(add_vol_req_t *req)
 {
 	tbl_trade_vol_t trade_vol;
-	int ret = get_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
+	int ret = get_apply_trade_vol(g_core_data->db_conn, req->instrument_id, &trade_vol);
 	if (ret) {
 		printf("WARNING: [%s][%d] Add vol get etf[%s] trade vol failed.\n", __FL__, req->instrument_id);
 		SET_RESULT(SO_BAD);
@@ -129,12 +129,20 @@ static int __check_trade_time()
 
 	int i;
 	tbl_trade_time_t *trade_time = NULL;
-	for (i = 0; i < array_count(a); ++i) {
-	    trade_info = (tbl_trade_time_t *)array_get(a, i); 
-		//比较当前时间是否在start_time和end_time之间		       
+	char start_time[2][16];
+	char end_time[2][16];
+	for (i = 0; i < array_count(a); ++i;) {
+	    trade_time = (tbl_trade_time_t *)array_get(a, i); 
+		strncpy(start_time[i], trade_time->start_time, sizeof(trade_time->start_time));
+		strncpy(end_time[i], trade_time->end_time, sizeof(trade_time->end_time));
+		if((strcmp(cur_time, start_time[i]) >= 0) && (strcmp(cur_time, end_time[i]) <= 0) )
+			return TRUE;	
 	}
 
+	printf("ERROR: it's not trade time now!\n", __FL__);
+	SET_RESULT(TRADE_TIME_ERR);
 	array_destroy(a);
+	return FALSE;
 
 }
 
