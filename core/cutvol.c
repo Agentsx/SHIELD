@@ -263,7 +263,7 @@ int cut_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-		CALLOC_MSG(cut_vol_rsp, h->fd, cut_VOL_RSP);
+		CALLOC_MSG(cut_vol_rsp, h->fd, CUT_VOL_RSP);
 
 		__package_cutvol_rsp_head(&cut_vol_rsp->msg_head);
 
