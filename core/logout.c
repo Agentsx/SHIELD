@@ -23,16 +23,15 @@ static int __package_head(msg_head_t *h)
 
 int logout_req_handler(shield_head_t *h)
 {
-	printf("TRACE: [%s][%d] login req handler called.\n", __FL__);
+	log_notice("TRACE: [%s][%d] login req handler called.\n", __FL__);
 	
 	CALLOC_MSG(logout_rsp, h->fd, LOGOUT_RSP);
 
 	__package_head(&logout_rsp->msg_head);
 	
-	printf("TRACE: [%s][%d] logout rsp head package ok.\n", __FL__);
+	log_notice("TRACE: [%s][%d] logout rsp head package ok.\n", __FL__);
 	
-	printf("TRACE: [%s][%d] logout rsp body package ok.\n", __FL__);
-	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
+	log_notice("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 
 	PUSH_MSG(logout_rsp);
 

@@ -6,6 +6,7 @@
 #include <string.h>	
 #include <time.h> 
 #include <sys/time.h> 
+#include "utils/log.h"
 
 
 static int __package_ping_head(msg_head_t *h, const char *type, int msg_len, int body_len)
@@ -27,13 +28,13 @@ static int __package_ping_head(msg_head_t *h, const char *type, int msg_len, int
 
 int ping_req_handler(shield_head_t *h)
 {
-	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
+	log_notice("TRACE: [%s][%d] ping handler called.\n", __FL__);
 
 	CALLOC_MSG(ping_req, h->fd, PING_REQ);
 
 	__package_ping_head(&ping_req->msg_head,S211, PING_REQ_BODY_LEN+MSG_HEAD_LEN, PING_REQ_BODY_LEN);
 	
-	printf("TRACE: [%s][%d] ping head package ok.\n", __FL__);
+	log_notice("TRACE: [%s][%d] ping head package ok.\n", __FL__);
 
 	struct timeval timenow;
     gettimeofday( &timenow, NULL );
@@ -48,8 +49,7 @@ int ping_req_handler(shield_head_t *h)
 		 1900+p->tm_year,1+p->tm_mon,p->tm_mday,p->tm_hour,p->tm_min,p->tm_sec,now_time_ms);
 	strncpy(ping_req->description, "ping req!", sizeof(ping_req->description));
 		
-	printf("TRACE: [%s][%d]ping rsp body package ok.\n", __FL__);
-	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
+	log_notice("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(ping_req);
 
 	return 0;
@@ -57,7 +57,7 @@ int ping_req_handler(shield_head_t *h)
 
 int ping_rsp_handler(shield_head_t *h)
 {
-	printf("TRACE: [%s][%d] ping handler called.\n", __FL__);
+	log_notice("TRACE: [%s][%d] ping handler called.\n", __FL__);
 
 	ping_req_t *ping_req = (ping_req_t *)(h + 1);
 
@@ -68,9 +68,6 @@ int ping_rsp_handler(shield_head_t *h)
 	strncpy(ping_rsp->date_time,ping_req->date_time, sizeof(ping_rsp->description));
 	strncpy(ping_rsp->description, "ping req!", sizeof(ping_rsp->description));
 
-	
-	printf("TRACE: [%s][%d]ping rsp body package ok.\n", __FL__);
-	printf("TRACE: [%s][%d] push to middle[%p].\n", __FL__, g_svr->core->push_to_middle);
 	PUSH_MSG(ping_rsp);
 
 	return 0;
