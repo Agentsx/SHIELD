@@ -24,30 +24,6 @@ int core_push_to_persistent(shield_head_t *h)
 	return queue_push(g_svr->tp->persistent_in, h);
 }
 
-typedef int (*biz_handler)(shield_head_t *h);
-biz_handler find_core_handler(int type)
-{
-	if (type <= 0 && type > MAX_TYPE)
-		return NULL;
-
-	return g_svr->core->handlers[type];
-}
-
-int core_handler_exe(shield_head_t *h)
-{
-	int (*biz_handler)(shield_head_t *h);
-
-	biz_handler = find_core_handler(h->trade_type); 
-
-	if (biz_handler != NULL) {
-		return biz_handler(h);
-	} else {
-		log_error("handler for trade_type [%lld] not found.", h->trade_type);
-		return -1;
-	}
-	return 0;	
-}
-
 int init_core_handler(core_handler_t *core, int (*dispatch)(shield_head_t *head))
 {
 	core->handler = dispatch;

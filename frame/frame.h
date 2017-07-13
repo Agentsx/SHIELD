@@ -5,8 +5,6 @@
 #include "thread.h"
 #include "utils/map.h"
 
-#define MAX_TYPE 0x80
-
 #define __FL__ __FILE__, __LINE__
 
 #define MAGIC_NUM 980234

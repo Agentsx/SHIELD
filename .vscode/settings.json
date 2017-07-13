@@ -8,6 +8,7 @@
         "frame.h": "c",
         "parsconf.h": "c",
         "err.h": "c",
-        "trade_type.h": "c"
+        "trade_type.h": "c",
+        "handler.c": "cpp"
     }
 }
