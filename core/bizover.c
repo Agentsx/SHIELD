@@ -31,9 +31,17 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 	    return -1;
 	}
 
-    STRNCPY(rsp->biz_code, req->biz_code);
+	STRNCPY(rsp->biz_code, req->biz_code);
 	rsp->total_records=array_count(a);
-	STRNCPY(rsp->tran_status, rsp->tran_status);
+
+	if(req->total_records<array_count(a)){
+		STRNCPY(rsp->tran_status,"1");
+	}
+	if else(req->total_records==array_count(a)){
+		STRNCPY(rsp->tran_status,"0");
+	}
+	else
+		STRNCPY(rsp->tran_status, "2");
     return 0;
 }
 
