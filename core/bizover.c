@@ -2,6 +2,9 @@
 #include "middle/middle.h"
 #include "include/trade_msg.h"
 #include "include/trade_type.h"
+#include "db_handler.h"
+#include "utils/array.h"
+#include "utils/log.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -34,14 +37,15 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 	STRNCPY(rsp->biz_code, req->biz_code);
 	rsp->total_records=array_count(a);
 
-	if(req->total_records<array_count(a)){
-		STRNCPY(rsp->tran_status,"1");
+	if(req->total_records < array_count(a)){
+		STRNCPY(rsp->tran_status, "1");
 	}
-	if else(req->total_records==array_count(a)){
-		STRNCPY(rsp->tran_status,"0");
+	else if(req->total_records == array_count(a)){
+		STRNCPY(rsp->tran_status, "0");
 	}
 	else
 		STRNCPY(rsp->tran_status, "2");
+
     return 0;
 }
 
