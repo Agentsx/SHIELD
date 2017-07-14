@@ -107,45 +107,50 @@ static void *__manage_routine(void *ctx)
         }
 
 		int counter = 5;
-		shield_head_t *h = NULL;
+		shield_head_t *head = NULL;
         while (counter--) {
-			h = NULL;
-            if (queue_pop(tp->read_out, (void **)&h))
+			head = NULL;
+            if (queue_pop(tp->read_out, (void **)&head))
 				continue;
 
-			if (h->magic_num == MAGIC_NUM) {
-				push_to(h, tp->middle_in);
-			} else {
-				unsigned int st = *(unsigned int*)h;
-				if (st == READ_DEL_FD) {
-					int fd = *(int *)((unsigned int *)h + 1);
-					close_fd(fd);
-				} else {
-					log_fatal("unkown st [%u].\n", st);
-				}
-				free(h);
-			}
+			if (head) {
+                if (head->magic_num == MAGIC_NUM) {
+				    push_to(head, tp->middle_in);
+			    } else {
+			    	unsigned int st = *(unsigned int*)head;
+			    	if (st == READ_DEL_FD) {
+			    		int fd = *(int *)((unsigned int *)head + 1);
+			    		close_fd(fd);
+                        log_notice("manage closed fd[%d].", fd);
+			    	} else {
+			    		log_fatal("unkown st [%u].", st);
+			    	}
+			    	free(head);
+			    }
+            } else {
+                log_error("error msg read from read_out");
+            }
         }
 
 		counter = 5;
 		while (counter--) {
-			h = NULL;
-            if (queue_pop(tp->middle_out, (void **)&h))
+			head = NULL;
+            if (queue_pop(tp->middle_out, (void **)&head))
 				continue;
 
-			if (h->magic_num == MAGIC_NUM) {
-                if (h->trade_type > MAX_BIZ_CMD) {
-                    if (h->trade_type == CMD_DEL_FD) {
-                        log_notice("close fd[%d]", h->fd);
-                        close(h->fd);
-                        __push_del_fd(h->fd, tp->read_in);
+			if (head->magic_num == MAGIC_NUM) {
+                if (head->trade_type > MAX_BIZ_CMD) {
+                    if (head->trade_type == CMD_DEL_FD) {
+                        log_notice("close fd[%d]", head->fd);
+                        close(head->fd);
+                        __push_del_fd(head->fd, tp->read_in);
                     }
                 } else {
-				    push_to(h, tp->write_in);
+				    push_to(head, tp->write_in);
                 }
 			} else {
 				log_fatal("read from middle out error.");	
-				free(h);
+				free(head);
 			}
 		}
 		usleep(SLEEPTIME);
@@ -265,7 +270,7 @@ static void *__core_routine(void *ctx)
 		g_svr->running = 0;
         exit(1);
 	}
-    shield_head_t *h;
+    shield_head_t *head;
     while (g_svr->running) {
         usleep(SLEEPTIME);
 
@@ -276,13 +281,13 @@ static void *__core_routine(void *ctx)
 			__send_lock_msg();
 		}
 
-        h = NULL;
-        if (queue_pop(tp->core_in, (void **)&h))
+        head = NULL;
+        if (queue_pop(tp->core_in, (void **)&head))
 			continue;
 
 		log_info("core read something from core in.");
-        if (h->magic_num == MAGIC_NUM) {
-			ret = g_svr->core->handler(h);
+        if (head && head->magic_num == MAGIC_NUM) {
+			ret = g_svr->core->handler(head);
 			if (ret)
 				log_error("core handle msg error [%d].", ret);
 			else
@@ -291,7 +296,7 @@ static void *__core_routine(void *ctx)
 			log_info("read from core in error.");
 		}
     
-        free(h);
+        if (head) free(head);
     }
 
     return NULL;
@@ -344,7 +349,7 @@ static void *__middle_routine(void *ctx)
             if (queue_pop(tp->middle_in, (void **)&head))
 				continue;
 
-            if (head->magic_num == MAGIC_NUM) {
+            if (head && head->magic_num == MAGIC_NUM) {
             	ret = g_svr->middle->handle_in(head);
 				if (ret)
 					log_error("middle handle in message error [%d].", ret);
@@ -352,7 +357,7 @@ static void *__middle_routine(void *ctx)
 					log_error("read from middle in error.");
 			}
 
-            free(head);
+            if (head) free(head);
         }
 
         counter = 5;
@@ -361,7 +366,7 @@ static void *__middle_routine(void *ctx)
             if (queue_pop(tp->core_out, (void **)&head))
 				continue;
 
-            if (head->magic_num == MAGIC_NUM) {
+            if (head && head->magic_num == MAGIC_NUM) {
             	ret = g_svr->middle->handle_out(head);
 				if (ret)
 					log_error("middle handle out message error [%d].", ret);
@@ -369,7 +374,7 @@ static void *__middle_routine(void *ctx)
 				log_error("read from core out message error [%d].", ret);
 			}
 
-            free(head);
+            if (head) free(head);
         }
 
         usleep(SLEEPTIME);

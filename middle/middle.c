@@ -73,8 +73,10 @@ static void *__resolve_body(int type, const char *body, size_t *len)
 
 int resolve_msg(shield_head_t *head)
 {
-    if (head->trade_type > MAX_BIZ_CMD) { // system msg
-	    MIDDLE_PUSH_IN(head);
+    if (head->trade_type > MAX_BIZ_CMD) { /* system msg */
+		shield_head_t *new = calloc(1, sizeof(shield_head_t));
+		memcpy(new, head, sizeof(shield_head_t));
+	    MIDDLE_PUSH_IN(new);
         return 0;
     }
 
@@ -140,7 +142,8 @@ static int __package_msg(void *h, char *msg, template_t *temp)
 			break;
 		case 'S':
 			p = (char *)h + sp;
-			len = strlen(p) > temp[i].len_in_msg ? temp[i].len_in_msg : strlen(p); 
+			len = strlen(p) > temp[i].len_in_msg ? temp[i].len_in_msg : strlen(p);
+			log_debug("===%s===", p);
 			memcpy(msg + mp, p, len);
 			sp += temp[i].len_in_struct;
 			break;
@@ -171,7 +174,7 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 
 	char *msg = NULL;
 	msg = calloc(1, m->body_len + 1);
-	*len = m->body_len;
+	*len = m->body_len + 1;
 	memset(msg, 0x20, m->body_len);
 	__package_msg(h + 1, msg, m->templ);
 
@@ -183,7 +186,9 @@ int package_msg(shield_head_t *head)
 	log_notice("middle package msg been called. cmd[%lld]", head->trade_type);
 
     if (head->trade_type > MAX_BIZ_CMD) {  // system msg
-	    MIDDLE_PUSH_OUT(head);
+		shield_head_t *new = calloc(1, sizeof(shield_head_t));  /* avoid double free */
+		memcpy(new, head, sizeof(shield_head_t));
+	    MIDDLE_PUSH_OUT(new);
         return 0;
     }
 
@@ -197,7 +202,7 @@ int package_msg(shield_head_t *head)
 		return -1;
 	}
 
-	shield_head_t *out = calloc(1, sizeof(shield_head_t) + MSG_HEAD_LEN + len);
+	shield_head_t *out = calloc(1, sizeof(shield_head_t) + MSG_HEAD_LEN + len + 1);
 	out->magic_num = head->magic_num;
 	out->fd = head->fd;
 	out->trade_type = head->trade_type;
@@ -253,6 +258,7 @@ int middle_init()
             log_debug("%s %d %d %d", h->stype, h->itype, h->struct_len, h->body_len); 
         }
     }
+	map_destroy_keys(keys);
     log_notice("------middle init end------");
 
     return 0;

@@ -41,14 +41,14 @@ static void *__pro_read(int fd, size_t *len)
 	if (ilen <= 0)
 		return NULL;
 
-	void *msg = calloc(ilen, 1);
+	void *msg = calloc(ilen + 1, sizeof(char));
 	ret = read(fd, msg + 6, ilen - 6);
 	if (ret != ilen - 6) {
 		free(msg);
 		return NULL;
 	}
 	memcpy(msg, slen, LEN_OF_MSGLEN);
-	*len = ilen;
+	*len = ilen + 1;
 	return msg;	
 }
 

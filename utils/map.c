@@ -1,8 +1,19 @@
 #include "map.h"
+#include "log.h"
 #include "utils.h"
 #include <string.h>
 
 static int __int_match(const void *a, const void *b)
+{
+    return *(int *)a == *(int *)b;
+}
+
+static int __l_match(const void *a, const void *b)
+{
+    return *(long *)a == *(long *)b;
+}
+
+static int __ll_match(const void *a, const void *b)
 {
     return *(long long *)a == *(long long *)b;
 }
@@ -165,9 +176,12 @@ map_t *map_init_with_cap(int key_type, int val_type, size_t capacity)
 
     switch (key_type) {
     case L:
+	    m->hash = __ll_hash;
+        m->match = __l_match;
+		break;
     case LL:
 	    m->hash = __ll_hash;
-        m->match = __int_match;
+        m->match = __ll_match;
         break;
     case INT:
 	    m->hash = __int_hash;
@@ -278,6 +292,7 @@ int map_replace(map_t *m, void *key, void *val, void **oldval)
 
     map_pair_t *p;
     if ((p = __map_find(key, m->buckets[pos], m->match)) == NULL) {
+		log_debug("map replace find NULL. pos[%d]", pos);
         map_put(m, key, val);
         *oldval = NULL;
     } else {
@@ -304,21 +319,24 @@ int map_remove(map_t *m, void *key, map_pair_t **oldval)
     }
 
     if (p != NULL) {
-        p1->next = p->next;
-        p->next = NULL;
+        if (p == m->buckets[pos]) {
+            m->buckets[pos] = NULL;
+        } else {
+            p1->next = p->next;
+            p->next = NULL;
+        }
+        --m->size;
     }
 
     *oldval = p;
     
-    --m->size;
     return 0;
 }
 
 void **map_keys(map_t *m, size_t *size)
 {
-    *size = m->size;
-    void **ks = (void **)calloc(*size, sizeof(void *));
-    if (ks == NULL) {
+    void **ks = (void **)calloc(m->size, sizeof(void *));
+    if (ks == NULL) {  /* size maybe 0*/
         *size = 0;
         return NULL; 
     }
@@ -332,6 +350,7 @@ void **map_keys(map_t *m, size_t *size)
              p = p->next;
          }
     }
+    *size = j;
     return ks;
 }
 

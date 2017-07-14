@@ -53,7 +53,7 @@ template_t biz_over_rsp_template[] = {
 
 template_t logout_req_template[] = {
 	{1, 'S', 8},
-	{64, 'S', 64},
+	{64, 'S', 72},
 	{-1, -1, -1}
 };
 
@@ -62,14 +62,14 @@ template_t logout_rsp_template[] = {
 };
 
 template_t ping_req_template[] = {
-	{16, 'S', 16},
-	{8, 'S', 8},
+	{16, 'S', 24},
+	{8, 'S', 16},
 	{-1, -1, -1}
 };
 
 template_t ping_rsp_template[] = {
-	{16, 'S', 16},
-	{8, 'S', 8},
+	{16, 'S', 24},
+	{8, 'S', 16},
 	{-1, -1, -1}
 };
 

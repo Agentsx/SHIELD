@@ -160,9 +160,11 @@ static int __del_fd_handle(int fd)
 {
     map_pair_t *p = NULL;
     map_remove(fd_heart, (void *)&fd, &p);
-    if (p)
+    if (p) {
+        free(p->key);
+        free(p->val);
         free(p);
-
+    }
     __update_fd_login(fd);
 
     return 0;
@@ -182,10 +184,11 @@ static int __lock_msg_handle()
     log_debug("fd size[%ld].", size);
     for (i = 0; i < size; ++i) {
         if (map_get(fd_heart, keys[i], (void **)&t) == 0) {
+            int fd = *(int *)keys[i];
             if (t->had_sent && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->lose_interval) {
-                log_notice("lose heart beat. delete fd[%d]", *(int *)keys[i]);
-                __del_fd_handle(*(int *)keys[i]);
-                __send_del_fd(*(int *)keys[i]);
+                log_notice("lose heart beat. delete fd[%d]", fd);
+                __del_fd_handle(fd);
+                __send_del_fd(fd);
             } else if (t->had_sent == 0 && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->interval) {
                 fd_heart_t *tmp = calloc(1, sizeof(fd_heart_t));
                 tmp->had_sent = 1;
@@ -194,11 +197,12 @@ static int __lock_msg_handle()
                 void *p = NULL;
                 map_replace(fd_heart, keys[i], tmp, &p);
                 if (p) free(p);
-                log_notice("send heart beat. fd[%d]", *(int *)keys[i]);
-                __send_heart_beat(*(int *)keys[i]);
+                log_notice("send heart beat. fd[%d]", fd);
+                __send_heart_beat(fd);
             }
         }
     }
+    map_destroy_keys(keys);
     return 0;
 }
 

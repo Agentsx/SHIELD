@@ -78,7 +78,7 @@ typedef struct biz_over_rsp_s {
 typedef struct logout_req_s {
 	msg_head_t  msg_head;
 	char 		code[8];
-	char 		description[64];
+	char 		description[72];
 } logout_req_t;
 
 typedef struct logout_rsp_s {
@@ -87,14 +87,14 @@ typedef struct logout_rsp_s {
 
 typedef struct ping_req_s {
 	msg_head_t  msg_head;
-	char 		date_time[16];
-	char		description[8];
+	char 		date_time[24];
+	char		description[16];
 } ping_req_t;
 
 typedef struct ping_rsp_s {
 	msg_head_t  msg_head;
-	char 		date_time[16];
-	char		description[8];
+	char 		date_time[24];
+	char		description[16];
 } ping_rsp_t;
 
 typedef struct add_vol_req_s{

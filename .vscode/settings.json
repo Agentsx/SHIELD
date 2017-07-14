@@ -9,6 +9,11 @@
         "parsconf.h": "c",
         "err.h": "c",
         "trade_type.h": "c",
-        "handler.c": "cpp"
+        "handler.c": "cpp",
+        "log.h": "c",
+        "queue.h": "c",
+        "map.h": "c",
+        "getopt.h": "c",
+        "hash.h": "c"
     }
 }
