@@ -1,0 +1,13 @@
+[INFO] [2017-07-16 16:47:13] [thread.c:33] Thread begin.
+[INFO] [2017-07-16 16:47:22] [thread.c:64] connect new fd [14].
+[DEBUG] [2017-07-16 16:47:22] [thread.c:118] some one connected.
+[INFO] [2017-07-16 16:47:23] [thread.c:64] connect new fd [15].
+[DEBUG] [2017-07-16 16:47:23] [thread.c:118] some one connected.
+[NOTICE] [2017-07-16 16:47:23] [thread.c:88] manage closed fd[14].
+[NOTICE] [2017-07-16 16:47:23] [thread.c:136] close fd [14].
+[NOTICE] [2017-07-16 16:47:34] [thread.c:88] manage closed fd[15].
+[NOTICE] [2017-07-16 16:47:34] [thread.c:136] close fd [15].
+[INFO] [2017-07-16 16:50:00] [thread.c:64] connect new fd [14].
+[DEBUG] [2017-07-16 16:50:00] [thread.c:118] some one connected.
+[NOTICE] [2017-07-16 16:50:06] [thread.c:88] manage closed fd[14].
+[NOTICE] [2017-07-16 16:50:06] [thread.c:136] close fd [14].

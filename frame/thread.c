@@ -14,7 +14,7 @@
 
 #define MAXFDS         1024
 #define LEN_OF_MSGLEN  6 
-#define SLEEPTIME      2000
+#define SLEEPTIME      100000
 
 thread_pool_t *tp = NULL;
 
@@ -55,7 +55,7 @@ int push_to(void *msg, queue *q)
     return queue_push(q, msg);
 }
 
-int __socket_event_handler(int fd, struct epoll_event *event)
+static int __socket_event_handler(int fd, struct epoll_event *event)
 {
     if (event->events & EPOLLIN) {
         int connfd = accept_fd(fd);
@@ -73,13 +73,25 @@ int __socket_event_handler(int fd, struct epoll_event *event)
     return 0;
 }
 
-int __send_lock_msg()
+static int __send_lock_msg()
 {
     shield_head_t *head = calloc(1, sizeof(shield_head_t));
     head->magic_num = MAGIC_NUM;
     head->trade_type = CMD_CLOCK_MSG;
     g_svr->core->handler(head);
 	return 0;
+}
+
+static int __manage_close_fd(int fd)
+{
+    close_fd(fd);
+    log_notice("manage closed fd[%d].", fd);
+    shield_head_t *h = calloc(1, sizeof(shield_head_t));
+    h->magic_num = MAGIC_NUM;
+    h->trade_type = CMD_DEL_FD;
+    h->fd = fd;
+    push_to(h, tp->middle_in);
+    return 0;
 }
 
 static void *__manage_routine(void *ctx)
@@ -120,8 +132,8 @@ static void *__manage_routine(void *ctx)
 			    	unsigned int st = *(unsigned int*)head;
 			    	if (st == READ_DEL_FD) {
 			    		int fd = *(int *)((unsigned int *)head + 1);
-			    		close_fd(fd);
-                        log_notice("manage closed fd[%d].", fd);
+                        __manage_close_fd(fd);
+                        log_notice("close fd [%d].", fd);
 			    	} else {
 			    		log_fatal("unkown st [%u].", st);
 			    	}
@@ -280,7 +292,7 @@ static void *__core_routine(void *ctx)
             tv_last.tv_usec = tv_curr.tv_usec;
 			__send_lock_msg();
 		}
-
+        
         head = NULL;
         if (queue_pop(tp->core_in, (void **)&head))
 			continue;

@@ -230,11 +230,15 @@ static int __update_heart_beat(int fd)
 static int __check_login(int fd)
 {
     int  *flag = NULL;
-    if (map_get(g_core_data->login_list, (void *)&fd, (void **)&flag))
+    if (map_get(g_core_data->login_list, (void *)&fd, (void **)&flag)) {
+        log_notice("get fd[%d] login status from loging list NULL.", fd);
         return -1;   /* did not login */
+    }
 
-    if (*flag != 1)
+    if (*flag != 1) {
+        log_notice("fd[%d] login status is [%d].", fd, *flag);
         return -1;
+    }
 
     return 0;
 }
@@ -256,7 +260,7 @@ int core_dispatch(shield_head_t *head)
 
     if (head->trade_type != CMD_LOGIN_REQ) {
         if (__check_login(head->fd)) {
-            log_warn("did not login, discard msg.");
+            log_warn("fd [%d] did not login, discard msg.", head->fd);
             return 0;
         }
     }

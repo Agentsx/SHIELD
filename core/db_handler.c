@@ -77,7 +77,7 @@ int get_user(sqlite3 *conn, const char *name, tbl_user_t *user)
 		goto ERROR;
 
     char *tmp = NULL;
-    ret = map_get(h, "f_user_name", (void **)&tmp);
+    ret = map_get(h, "f_username", (void **)&tmp);
     if (ret)
         goto ERROR;
     strncpy(user->name, tmp, sizeof(user->name));

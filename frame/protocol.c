@@ -1,5 +1,6 @@
 #include "protocol.h"
-#include <stdio.h>
+#include "utils/log.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -33,21 +34,27 @@ static void *__pro_read(int fd, size_t *len)
 	char slen[LEN_OF_MSGLEN + 1] = {0};
 	int ret;
 	ret = __readn(fd, slen, LEN_OF_MSGLEN);
-	if (ret != LEN_OF_MSGLEN)
+	if (ret != LEN_OF_MSGLEN) {
+		log_error("read length of package error.");
 		return NULL;
+	}
                 
 	int ilen;
 	ilen = atoi(slen);
-	if (ilen <= 0)
+	if (ilen <= 0) {
+		log_error("read length of package slen[%s], ilen[%d].", slen, ilen);
 		return NULL;
+	}
 
 	void *msg = calloc(ilen + 1, sizeof(char));
-	ret = read(fd, msg + 6, ilen - 6);
-	if (ret != ilen - 6) {
+	memcpy(msg, slen, LEN_OF_MSGLEN);
+	ret = __readn(fd, msg + LEN_OF_MSGLEN, ilen - LEN_OF_MSGLEN);
+	if (ret != ilen - LEN_OF_MSGLEN) {
+		log_error("read package ilen[%d] error ret[%d].", ilen - LEN_OF_MSGLEN, ret);
 		free(msg);
 		return NULL;
 	}
-	memcpy(msg, slen, LEN_OF_MSGLEN);
+	
 	*len = ilen + 1;
 	return msg;	
 }
