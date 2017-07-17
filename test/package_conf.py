@@ -1,6 +1,5 @@
 #!/usr/bin/python
 #-*- coding: UTF-8 -*-
-import re
 
 IP_ADDRESS = "127.0.0.1"
 PORT = 9999
@@ -9,7 +8,7 @@ package_conf={
     "login_req":[
         "241   ",#"msg_len[8]
         "1",#fix_length,
-        "61    ",#fix_length
+        "61    ",#rec_length
         "0     ",#recv_no
         "S201",#msg_type
         "0               ",#trans_no
@@ -28,7 +27,7 @@ package_conf={
     "logout_req": [
         "245   ",#"msg_len[8]
         "1",#fix_length,
-        "65    ",#fix_length
+        "65    ",#rec_length
         "0     ",#recv_no
         "S209",#msg_type
         "0               ",#trans_no
@@ -40,101 +39,86 @@ package_conf={
         "0",#code
         "logout                                                          "#description
     ],
-    #"bizover_req": [
-    #    "1",#"msg_len[8]
-    #    "2   ",#fix_length,
-    #    "3",#fix_length
-    #    "4",#recv_no
-    #    "5",#msg_type
-    #    "6",#trans_no
-    #    "",#signature_flag
-    #    "",#encrypted
-    #    "",#resend_flag
-    #    "",#reserved
-    #    "",#signaturedata
-    #    "",#biz_over
-    #    "",#total_records
-    #    ""#trans_status
-    #],
-    #"ping_req": [
-    #    "1",#"msg_len[8]
-    #    "2   ",#fix_length,
-    #    "3",#fix_length
-    #    "4",#recv_no
-    #    "5",#msg_type
-    #    "6",#trans_no
-    #    "",#signature_flag
-    #    "",#encrypted
-    #    "",#resend_flag
-    #    "",#reserved
-    #    "",#signaturedata
-    #    "",#date_time
-    #    ""#decription
-    #],
-    #"ping_rsp": [
-    #    "1",#"msg_len[8]
-    #    "2   ",#fix_length,
-    #    "3",#fix_length
-    #    "4",#recv_no
-    #    "5",#msg_type
-    #    "6",#trans_no
-    #    "",#signature_flag
-    #    "",#encrypted
-    #    "",#resend_flag
-    #    "",#reserved
-    #    "",#signaturedata
-    #    "",#date_time
-    #    ""#decription
-    #],
-    #"addvol_req": [
-    #    "1",  # "msg_len[8]
-    #    "2   ",  # fix_length,
-    #    "3",  # fix_length
-    #    "4",  # recv_no
-    #    "5",  # msg_type
-    #    "6",  # trans_no
-    #    "",  # signature_flag
-    #    "",  # encrypted
-    #    "",  # resend_flag
-    #    "",  # reserved
-    #    "",  # signaturedata
-    #    "",# instruction_id
-    #    "",# instrument_id
-    #    "",# account_id
-    #    "",# PUB
-    #    ""# quantity
-    #],
-    #"cutvol_req": [
-    #    "1",  # "msg_len[8]
-    #    "2   ",  # fix_length,
-    #    "3",  # fix_length
-    #    "4",  # recv_no
-    #    "5",  # msg_type
-    #    "6",  # trans_no
-    #    "",  # signature_flag
-    #    "",  # encrypted
-    #    "",  # resend_flag
-    #    "",  # reserved
-    #    "",  # signaturedata
-    #    "",  # instruction_id
-    #    "",  # instrument_id
-    #    "",  # account_id
-    #    "",  # PUB
-    #    ""  # quantity
-    #],
-    #"qry_req": [
-    #    "1",  # "msg_len[8]
-    #    "2   ",  # fix_length,
-    #    "3",  # fix_length
-    #    "4",  # recv_no
-    #    "5",  # msg_type
-    #    "6",  # trans_no
-    #    "",  # signature_flag
-    #    "",  # encrypted
-    #    "",  # resend_flag
-    #    "",  # reserved
-    #    "",  # signaturedata
-    #    ""   # org_instruction_id
-    #]
+    "bizover_req": [
+        "200   ",#"msg_len[8]
+        "1",#fix_length,
+        "20    ",#rec_length
+        "0     ",#recv_no
+        "S205",#msg_type
+        "0               ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "001",#biz_code
+        "                ",#total_records////////////////////
+        "0"#trans_status
+    ],
+	"ping_req": [
+        "204   ",#"msg_len[8]
+        "1",#fix_length,
+        "65    ",#rec_length
+        "0     ",#recv_no
+        "S211",#msg_type
+        "0               ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "                ",#date_time
+        "ping_req                                                        "#decription
+    ],
+    "addvol_req": [
+        "234   ",#"msg_len[8]
+        "1",#fix_length,
+        "54    ",#rec_length
+        "0     ",#recv_no
+        "A301",#msg_type
+        "0               ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "                ",# instruction_id////////////
+        "      ",# instrument_id//////////////
+        "          ",# account_id//////////////
+        "      ",# PUB/////////////
+        "                "# quantity//////////////
+    ],
+    "cutvol_req": [
+        "234   ",#"msg_len[8]
+        "1",#fix_length,
+        "54    ",#rec_length
+        "0     ",#recv_no
+        "A303",#msg_type
+        "0               ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "                ",# instruction_id////////////
+        "      ",# instrument_id//////////////
+        "          ",# account_id//////////////
+        "      ",# PUB/////////////
+        "                "# quantity//////////////
+    ],
+    "qry_req": [
+        "196   ",#"msg_len[8]
+        "1",#fix_length,
+        "16    ",#rec_length
+        "0     ",#recv_no
+        "A305",#msg_type
+        "0               ",#trans_no
+        "0",#signature_flag
+        "0",#encrypted
+        "0",#resend_flag
+        "123       ",#reserved
+        "                                                                                                                                ",#signaturedata
+        "                "# org_instruction_id///////////////////////
+    ]
 }
 
