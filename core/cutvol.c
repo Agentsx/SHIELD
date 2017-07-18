@@ -95,7 +95,7 @@ static int __cutvol_check_sge_instruction(const char *instruction_id)
 
 	char *instr = NULL;
 	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
-	if (ret) {
+	if (ret == 0) {
 		log_warn("cut vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
         goto ERROR;
@@ -123,26 +123,27 @@ static int __cutvol_check_trade_time()
 	ret = get_trade_time(g_core_data->db_conn , a);
 	if (ret) {
 	    log_error("failed to find trade time !");
-	    return -1;
+        goto ERROR;
 	}
 
 	int i;
 	tbl_trade_time_t *trade_time = NULL;
-	char start_time[2][16];
-	char end_time[2][16];
 	for (i = 0; i < array_count(a); ++i) {
 	    trade_time = (tbl_trade_time_t *)array_get(a, i); 
-		strncpy(start_time[i], trade_time->start_time, sizeof(trade_time->start_time));
-		strncpy(end_time[i], trade_time->end_time, sizeof(trade_time->end_time));
-		if((strcmp(cur_time, start_time[i]) >= 0) && (strcmp(cur_time, end_time[i]) <= 0) )
-			return TRUE;	
+		if((strcmp(cur_time, trade_time->start_time) >= 0) 
+           && (strcmp(cur_time, trade_time->end_time) <= 0) )
+			break;	
 	}
 
-	log_warn("it's not trade time now!");
-	SET_RESULT(TRADE_TIME_ERR);
+    if (i < array_count(a)) {
+        array_destroy(a);
+        return TRUE; 
+    }
+
+ERROR:
+    SET_RESULT(TRADE_TIME_ERR);
 	array_destroy(a);
 	return FALSE;
-
 }
 
 static int __cutvol_req_check(cut_vol_req_t *req)
@@ -215,14 +216,9 @@ int __cutvol_update_trade_vol(const char *etf_code, long long quantity)
 {
 	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, 0, quantity);
 }
-int __cutvol_update_client_quantity(const char *account_id,const char *pbu,long long quantity)
+int __cutvol_update_client_quantity(const char *account_id, long long quantity)
 {
-	tbl_client_t client;
-	int ret = get_client(g_core_data->db_conn,account_id, &client);
-	if (ret) {
-		return FALSE;
-	}
-	return update_client_quantity(g_core_data->db_conn, account_id, pbu, quantity, client.status);
+	return update_client_quantity(g_core_data->db_conn, account_id, (-1) * quantity);
 }
 
 static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
@@ -232,7 +228,7 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__cutvol_update_trade_vol(req->instrument_id, req->quantity);
 		
-		__cutvol_update_client_quantity(req->account_id,req->PBU,req->quantity);
+		__cutvol_update_client_quantity(req->account_id, req->quantity);
 	}
 
 	return TRUE;
@@ -240,7 +236,7 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 
 int cut_vol_req_handler(shield_head_t *h)
 {
-	log_notice("cut vol handler called.");
+	log_notice("==cut vol handler begin==");
 
 	CLEAR_RESULT();
 	
@@ -253,7 +249,7 @@ int cut_vol_req_handler(shield_head_t *h)
 		goto AFTER;
 	}
 
-	SET_RESULT(REDEMPTION_SUCCESS);
+	SET_RESULT(TRADE_SUCCESS);
 
 AFTER:
 	{
@@ -273,7 +269,7 @@ AFTER:
 		
 		PUSH_MSG(cut_vol_rsp);
 	}
+
+	log_notice("==cut vol handler end, rsp[%s]==", result_code);
 	return 0;
 }
-	
-

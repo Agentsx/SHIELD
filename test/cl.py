@@ -46,7 +46,7 @@ if __name__ == '__main__':
 	#	obj._send_pkg_()
 	#	print("send pkg", pkg_content)
 	#	# obj._heart_beat_()
-	pkg_name = ['login_req', 'logout_req']
+	pkg_name = ['login_req', 'addvol_req', 'cutvol_req', 'logout_req']
 	obj = Sending()
 	for name in pkg_name:
 		package = get_pkg(name)

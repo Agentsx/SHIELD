@@ -22,7 +22,7 @@ static int __package_head(msg_head_t *h)
 
 int logout_req_handler(shield_head_t *h)
 {
-	log_notice("login req handler called.");
+	log_notice("==logout req handler begin==");
 	
 	CALLOC_MSG(logout_rsp, h->fd, CMD_LOGOUT_RSP);
 
@@ -35,6 +35,7 @@ int logout_req_handler(shield_head_t *h)
         free(p);
 	
 	PUSH_MSG(logout_rsp);
+	log_notice("==logout req handler end==");
 
 	return 0;
 }

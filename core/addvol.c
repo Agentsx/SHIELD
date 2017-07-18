@@ -68,13 +68,13 @@ int __addvol_check_limit(add_vol_req_t *req)
     tbl_trade_list_t *tl = NULL;
     ret = map_get(g_core_data->trade_list, req->instrument_id, (void **)&tl);
     if (ret) {
-		log_warn("Add vol get etf[%s] trade list.", req->instrument_id);
+		log_warn("Add vol get etf[%s] trade list error.", req->instrument_id);
 		SET_RESULT(SO_BAD);
         return FALSE ;
     }
 
 	if (tl->apply_limit < req->quantity + trade_vol.apply) {
-		log_warn("Add vol get etf[%s] trade vol failed.", req->instrument_id);
+		log_warn("apply vol[%lld] beyond apply limit[%lld], had applied [%lld].", req->quantity, tl->apply_limit, trade_vol.apply);
 		SET_RESULT(BEYOND_APPLY_LIMIT);
 		return FALSE;
 	}
@@ -94,7 +94,7 @@ static int __addvol_check_sge_instruction(const char *instruction_id)
 
 	char *instr = NULL;
 	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
-	if (ret) {
+	if (ret == 0) {
 		log_warn("Add vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
         goto ERROR;
@@ -122,26 +122,27 @@ static int __addvol_check_trade_time()
 	ret = get_trade_time(g_core_data->db_conn , a);
 	if (ret) {
 	    log_error("failed to find trade time !");
-	    return -1;
+        goto ERROR;
 	}
 
 	int i;
 	tbl_trade_time_t *trade_time = NULL;
-	char start_time[2][16];
-	char end_time[2][16];
 	for (i = 0; i < array_count(a); ++i) {
 	    trade_time = (tbl_trade_time_t *)array_get(a, i); 
-		strncpy(start_time[i], trade_time->start_time, sizeof(trade_time->start_time));
-		strncpy(end_time[i], trade_time->end_time, sizeof(trade_time->end_time));
-		if((strcmp(cur_time, start_time[i]) >= 0) && (strcmp(cur_time, end_time[i]) <= 0) )
-			return TRUE;	
+		if((strcmp(cur_time, trade_time->start_time) >= 0) 
+           && (strcmp(cur_time, trade_time->end_time) <= 0) )
+			break;	
 	}
 
-	log_error("it's not trade time now!");
-	SET_RESULT(TRADE_TIME_ERR);
+    if (i < array_count(a)) {
+        array_destroy(a);
+        return TRUE; 
+    }
+
+ERROR:
+    SET_RESULT(TRADE_TIME_ERR);
 	array_destroy(a);
 	return FALSE;
-
 }
 
 static int __addvol_req_check(add_vol_req_t *req)
@@ -174,7 +175,7 @@ static int __addvol_req_check(add_vol_req_t *req)
 
 	ret = __addvol_check_limit(req);
 	if (ret) {
-		log_warn("Add vol check client failed.");
+		log_warn("Add vol check apply limit failed.");
 		return FALSE;
 	}
 	return TRUE;
@@ -214,14 +215,9 @@ int __addvol_update_trade_vol(const char *etf_code, long long quantity)
 {
 	return update_trade_vol(g_core_data->db_conn, g_core_data->trade_date, etf_code, quantity, 0);
 }
-int __addvol_update_client_quantity(const char *account_id,const char *pbu,long long quantity)
+int __addvol_update_client_quantity(const char *account_id, long long quantity)
 {
-	tbl_client_t client;
-	int ret = get_client(g_core_data->db_conn,account_id, &client);
-	if (ret) {
-		return FALSE;
-	}
-	return update_client_quantity(g_core_data->db_conn, account_id, pbu, quantity, client.status);
+	return update_client_quantity(g_core_data->db_conn, account_id, quantity);
 }
 
 static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
@@ -231,7 +227,7 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 	if (strcmp(rsp->processing_result, TRADE_OK) == 0) {
 		__addvol_update_trade_vol(req->instrument_id, req->quantity);
 		
-		__addvol_update_client_quantity(req->account_id,req->PBU,req->quantity);
+		__addvol_update_client_quantity(req->account_id, req->quantity);
 	}
 
 	return TRUE;
@@ -239,7 +235,7 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 
 int add_vol_req_handler(shield_head_t *h)
 {
-	log_notice("add vol handler called.");
+	log_notice("==add vol handler begin==");
 
 	CLEAR_RESULT();
 	
@@ -272,6 +268,7 @@ AFTER:
 		
 		PUSH_MSG(add_vol_rsp);
 	}
+	log_notice("==add vol handler end, rsp[%s]==", result_code);
 	return 0;
 }
 	

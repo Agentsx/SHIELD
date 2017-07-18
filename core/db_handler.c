@@ -270,20 +270,21 @@ ERROR:
 int get_trade_time(sqlite3 *conn,array_t *a)
 {
 	char *sql = "select * from t_trade_time;";
+
 	array_t *ia = array_init((array_item_destroy)map_destroy);
     int ret = 0;
     char *err_msg = NULL;
-	ret = db_exec_dql(conn, sql, &err_msg, a);
+	ret = db_exec_dql(conn, sql, &err_msg, ia);
 	if (ret != 0) {
 		log_error("select trade time error. [%s]." , err_msg);	
 		goto ERROR;
 	}
-	if (array_count(a) == 0)
+	if (array_count(ia) == 0)
 		goto ERROR;
 
     int i;
 	map_t *h=NULL;
-	tbl_trade_time_t  *trade_time = NULL;
+	tbl_trade_time_t *trade_time = NULL;
 	char *tmp = NULL;
 	for (i = 0; i < array_count(ia); ++i) {
 		trade_time = calloc(1, sizeof(tbl_trade_time_t));
@@ -297,7 +298,7 @@ int get_trade_time(sqlite3 *conn,array_t *a)
 		array_insert(a, (void *)trade_time);
 	}
 
-    array_destroy(a);
+    array_destroy(ia);
     return 0;
 
 ERROR:
@@ -364,12 +365,11 @@ int get_sge_instrctions(sqlite3 *conn, const char *trade_date, hash_t *h)
 
 	int i;
 	map_t *m = NULL;
-	tbl_trade_info_t  *trade_info = NULL;
 	char *tmp = NULL;
 	for (i = 0; i < array_count(ia); ++i) {
 		m = (map_t *)array_get(ia, i);
 		map_get(m, "f_sge_instruc", (void **)&tmp);
-		hash_insert(h, (void *)trade_info);
+		hash_insert(h, (void *)tmp);
 	}
 
     array_destroy(ia);
@@ -382,7 +382,7 @@ ERROR:
 
 int get_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code , tbl_trade_vol_t *trade_vol)
 {
-	char *temp = "select * from t_trade_list where f_trade_date = '%s' and f_etf_code = '%s';";
+	char *temp = "select * from t_trade_vol where f_trade_date = '%s' and f_etf_code = '%s';";
 	char sql[256];
 	snprintf(sql, sizeof(sql), temp, trade_date, etf_code);
 	log_debug("%s", sql);
@@ -404,16 +404,17 @@ int get_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code , 
 		goto ERROR;
 
 	char *tmp = NULL;
-	ret = map_get(h, "f_apply_limit", (void **)&tmp);
+	ret = map_get(h, "f_apply", (void **)&tmp);
 	if (ret != 0 || tmp == NULL)
 		goto ERROR;
 	trade_vol->apply = atol(tmp);
 	
-	ret = map_get(h, "f_redemption_limit", (void **)&tmp);
+	ret = map_get(h, "f_redemption", (void **)&tmp);
 	if (ret != 0 || tmp == NULL)
 		goto ERROR;
 
 	trade_vol->redemption = atol(tmp);
+    array_destroy(a);
 	return 0;
 
 ERROR:
@@ -423,18 +424,18 @@ ERROR:
 
 int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info)
 {
-	char *temp = "insert into t_trade_info values('%s', '%s', %d, %d, %d, '%s', '%s', '%s', '%lld', '%s', '%s');";
+	char *temp = "insert into t_trade_info values('%s', '%s', %d, %lld, %d, '%s', '%s', '%s', '%lld', '%s', '%s');";
 	char sql[256];
-	snprintf(sql, sizeof(sql), temp, trade_info->trade_date, \
-	                                 trade_info->sge_instruc, \
-									 trade_info->recv_type, \
-									 trade_info->trans_no, \
-									 trade_info->msg_type, \
-									 trade_info->etf_code, \
-									 trade_info->client_acc, \
-									 trade_info->pbu, \
-									 trade_info->quantity, \
-									 trade_info->result_code, \
+	snprintf(sql, sizeof(sql), temp, trade_info->trade_date,
+	                                 trade_info->sge_instruc,
+									 trade_info->recv_type,
+									 trade_info->trans_no,
+									 trade_info->msg_type,
+									 trade_info->etf_code,
+									 trade_info->client_acc,
+									 trade_info->pbu,
+									 trade_info->quantity,
+									 trade_info->result_code,
 									 trade_info->result_desc);
 	log_debug("%s", sql);
 
@@ -449,10 +450,9 @@ int insert_trade_info(sqlite3 *conn, const tbl_trade_info_t *trade_info)
 
 int update_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code, long long apply, long long redemption)
 {
-	char *temp = "update t_trade_vol set f_apply = f_apply + %lld, f_redemption = f_redemption + %lld " \
-	             "where f_trade_date = '%s' and f_etf_code = '%s';";
+	char *temp = "update t_trade_vol set f_apply = f_apply + %lld, f_redemption = f_redemption + %lld where f_trade_date = '%s' and f_etf_code = '%s';";
 	char sql[256];
-	snprintf(sql, sizeof(sql), temp, apply, redemption);
+	snprintf(sql, sizeof(sql), temp, apply, redemption, trade_date, etf_code);
 	log_debug("%s", sql);
 
 	char *err_msg;
@@ -463,12 +463,11 @@ int update_trade_vol(sqlite3 *conn, const char *trade_date, const char *etf_code
     return 0;
 }
 
-int update_client_quantity(sqlite3 *conn, const char *account_no, const char *pbu, long long quantity, int  status)
+int update_client_quantity(sqlite3 *conn, const char *account_no, long long quantity)
 {
-	char *temp = "update t_client set  f_pbu = %s ,f_quantity=%ld,f_status=%d" \
-	             "where f_acc_no = '%s' ;";
+	char *temp = "update t_client set f_quantity = f_quantity + %lld where f_acc_no = '%s';";
 	char sql[256];
-	snprintf(sql, sizeof(sql), temp, pbu, quantity,status);
+	snprintf(sql, sizeof(sql), temp, quantity, account_no);
 	log_debug("%s", sql);
 
 	char *err_msg;

@@ -99,7 +99,7 @@ typedef struct ping_rsp_s {
 
 typedef struct add_vol_req_s{
 	msg_head_t  msg_head;
-	char		instruction_id[16];
+	char		instruction_id[24];
 	char		instrument_id[8];
 	char		account_id[16];
 	char		PBU[8];
@@ -119,7 +119,7 @@ typedef struct add_vol_rsp_s{
 
 typedef struct cut_vol_req_s{
 	msg_head_t  msg_head;
-	char		instruction_id[16];
+	char		instruction_id[24];
 	char		instrument_id[8];
 	char		account_id[16];
 	char		PBU[8];

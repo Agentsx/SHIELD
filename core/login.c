@@ -131,7 +131,7 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
 
 int login_req_handler(shield_head_t *h)
 {
-	log_notice("login req handler called.");
+	log_notice("==login req handler begin==");
 
     CLEAR_RESULT();
 	
@@ -168,6 +168,7 @@ AFTER:
 	    
 	    PUSH_MSG(login_rsp);
     }
+	log_notice("==login req handler end. rsp[%s]==", result_code);
 
 	return 0;
 }

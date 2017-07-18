@@ -17,7 +17,7 @@ drop table t_trade_info;
 create table t_trade_info (
 	f_trade_date  varchar(8),
 	f_sge_instruc varchar(16),
-	f_recv_type   int not null,
+	f_recv_type   int,
 	f_trans_no    int not null,
 	f_msg_type    int not null,
 	f_etf_code    varchar(8) not null,
@@ -26,7 +26,7 @@ create table t_trade_info (
 	f_quantity    bigint not null,
 	f_result_code varchar(10),
 	f_result_desc varchar(80),
-	primary key(f_trade_date, f_sge_instruc)
+	primary key(f_trade_date, f_sge_instruc, f_recv_type)
 );
 
 drop table t_trade_date;
