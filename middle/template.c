@@ -105,7 +105,7 @@ template_t cut_vol_req_template[] = {
 template_t cut_vol_rsp_template[] = {
 	{5, 'S', 8},
 	{40, 'S', 48},
-	{16, 'S', 32},
+	{16, 'S', 24},
 	{6, 'S', 8},
 	{10, 'S', 16},
 	{6, 'S', 8},
