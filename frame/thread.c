@@ -14,7 +14,8 @@
 
 #define MAXFDS         1024
 #define LEN_OF_MSGLEN  6 
-#define SLEEPTIME      100000
+#define SLEEPTIME      200
+
 
 thread_pool_t *tp = NULL;
 
