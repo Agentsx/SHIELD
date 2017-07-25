@@ -172,7 +172,6 @@ static int __del_fd_handle(int fd)
 
 static int __lock_msg_handle()
 {
-    log_notice("... lock msg recived ...");
     struct timeval curr;
     gettimeofday(&curr, NULL);
 
@@ -245,8 +244,10 @@ static int __check_login(int fd)
 
 int core_dispatch(shield_head_t *head)
 {
-    if (head->trade_type == CMD_CLOCK_MSG)
+    if (head->trade_type == CMD_CLOCK_MSG) {
+        log_notice("... lock msg recived ...");
         return __lock_msg_handle();
+    }
 
     if (head->trade_type == CMD_ADD_FD) {
         log_notice("add fd[%d]", head->fd);

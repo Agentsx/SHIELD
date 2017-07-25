@@ -115,7 +115,7 @@ static int __addvol_check_trade_time()
 	struct tm *p;  
 	time(&timep);  
 	p =localtime(&timep);
-	sprintf(cur_time,"%d:%d", p->tm_hour, p->tm_min);
+	sprintf(cur_time,"%02d:%02d", p->tm_hour, p->tm_min);
 	
 	array_t *a = array_init(NULL);
 	int ret = 0;

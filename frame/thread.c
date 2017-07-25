@@ -107,6 +107,7 @@ static void *__manage_routine(void *ctx)
     event.events |= EPOLLERR | EPOLLHUP;
     event.data.fd = g_svr->listenfd;
     epoll_ctl(epfd, EPOLL_CTL_ADD, g_svr->listenfd, &event);
+    shield_head_t *head = NULL;
     while (1) {
         int num = epoll_wait(epfd, events, MAXFDS, 0);
         int i;
@@ -119,8 +120,7 @@ static void *__manage_routine(void *ctx)
 			log_debug("some one connected.");
         }
 
-		int counter = 5;
-		shield_head_t *head = NULL;
+		int counter = 64;
         while (counter--) {
 			head = NULL;
             if (queue_pop(tp->read_out, (void **)&head))
@@ -145,7 +145,7 @@ static void *__manage_routine(void *ctx)
             }
         }
 
-		counter = 5;
+		counter = 64;
 		while (counter--) {
 			head = NULL;
             if (queue_pop(tp->middle_out, (void **)&head))
@@ -356,7 +356,7 @@ static void *__middle_routine(void *ctx)
     shield_head_t *head = NULL;
     while (1) {
         int ret;
-        int counter = 5;
+        int counter = 64;
         while (counter--) {
 			head = NULL;
             if (queue_pop(tp->middle_in, (void **)&head))
@@ -373,7 +373,7 @@ static void *__middle_routine(void *ctx)
             if (head) free(head);
         }
 
-        counter = 5;
+        counter = 64;
         while (counter--) {
 			head = NULL;
             if (queue_pop(tp->core_out, (void **)&head))

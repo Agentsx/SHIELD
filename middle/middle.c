@@ -73,6 +73,8 @@ static void *__resolve_body(int type, const char *body, size_t *len)
 
 int resolve_msg(shield_head_t *head)
 {
+	log_notice("middle resolve msg been called. cmd[%lld]", head->trade_type);
+
     if (head->trade_type > MAX_BIZ_CMD) { /* system msg */
 		shield_head_t *new = calloc(1, sizeof(shield_head_t));
 		memcpy(new, head, sizeof(shield_head_t));
