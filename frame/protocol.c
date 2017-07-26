@@ -57,7 +57,7 @@ static int __pro_read(int fd, void **m, size_t *len)
 	
 	*len = ilen + 1;
 	*m = msg;
-	return msg;	
+	return 0;	
 }
 
 static int __writen(int fd, const void *vptr, size_t n)
