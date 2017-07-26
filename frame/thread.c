@@ -217,9 +217,15 @@ static void *__read_routine(void *ctx)
 				int fd = events[i].data.fd;
 				size_t len = 0;
 				log_info("read fd[%d] begin ......", fd);
-				void *msg = tp->sse_protocol->pro_read(fd, &len);
+				void *msg = NULL;
+                ret = tp->sse_protocol->pro_read(fd, &msg, &len);
 				log_info("read fd[%d] end ......", fd);
-                if (msg != NULL) { // good msg, put it
+                if (ret < 0) {
+                    // bad fd, delete it
+					log_error("read msg from fd error.");
+					epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+                	__push_del_fd(fd, tp->read_out);
+                } else if (msg != NULL) { // good msg, put it
 					log_info("read msg[%s] from fd length[%ld].", (char *)msg, len);
 					shield_head_t *h = calloc(1, sizeof(shield_head_t) + len);
 					h->magic_num = MAGIC_NUM;
@@ -228,12 +234,7 @@ static void *__read_routine(void *ctx)
                     memcpy(h + 1, msg, len);
                     push_to(h, tp->read_out);
                		free(msg);
-                } else {
-					// bad fd, delete it
-					log_error("read msg from fd error.");
-					epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
-                	__push_del_fd(fd, tp->read_out);
-				}
+                }
             }
         }
     }
@@ -254,7 +255,7 @@ static void *__write_routine(void *ctx)
         if (h->magic_num == MAGIC_NUM) {
         	log_info("will write to fd[%d], message[%s], length[%ld].", h->fd, (char *)(h + 1), h->len);
         	int ret;
-        	ret = tp->sse_protocol->pro_write(h->fd, h + 1, h->len);
+        	ret = tp->sse_protocol->pro_write(h->fd, h + 1, h->len - 1); // tail 0x0 not to send
         	log_info("length[%d] wroten.\n", ret);
 			free(h);
 		} else {

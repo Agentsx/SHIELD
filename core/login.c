@@ -162,7 +162,7 @@ AFTER:
 	    login_rsp->result[0] = result_code[0];
 	    login_rsp->heart_bt_int = 0;
 	    strncpy(login_rsp->data_date, g_core_data->trade_date, sizeof(login_rsp->data_date));
-	    login_rsp->begin_trans_no = 0;
+	    login_rsp->begin_trans_no = g_core_data->recv_trans_no;
 	    strncpy(login_rsp->description, result_desc, sizeof(login_rsp->description));
 	    login_rsp->connection_type[0] = 'G';
 	    

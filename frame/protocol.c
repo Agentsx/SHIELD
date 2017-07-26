@@ -29,21 +29,21 @@ static int __readn(int fd, void *buff, size_t n)
 	return n - nleft;
 }
 
-static void *__pro_read(int fd, size_t *len)
+static int __pro_read(int fd, void **m, size_t *len)
 {
 	char slen[LEN_OF_MSGLEN + 1] = {0};
 	int ret;
 	ret = __readn(fd, slen, LEN_OF_MSGLEN);
 	if (ret != LEN_OF_MSGLEN) {
-		log_error("read length of package error.");
-		return NULL;
+		log_error("read length of package error.ret[%d]", ret);
+		return -1;
 	}
                 
 	int ilen;
 	ilen = atoi(slen);
 	if (ilen <= 0) {
 		log_error("read length of package slen[%s], ilen[%d].", slen, ilen);
-		return NULL;
+		return -1;
 	}
 
 	void *msg = calloc(ilen + 1, sizeof(char));
@@ -52,10 +52,11 @@ static void *__pro_read(int fd, size_t *len)
 	if (ret != ilen - LEN_OF_MSGLEN) {
 		log_error("read package ilen[%d] error ret[%d].", ilen - LEN_OF_MSGLEN, ret);
 		free(msg);
-		return NULL;
+		return -1;
 	}
 	
 	*len = ilen + 1;
+	*m = msg;
 	return msg;	
 }
 
