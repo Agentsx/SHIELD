@@ -139,13 +139,13 @@ typedef struct cut_vol_rsp_s{
 
 typedef struct trade_qry_req_s{
 	msg_head_t  msg_head;
-	char	    org_instruction_id[16];
+	char	    org_instruction_id[24];
 } trade_qry_req_t;
 
 typedef struct trade_qry_rsp_s{
 	msg_head_t  msg_head;
 	char	    processing_result[8];
-	char	    org_instruction_id[16];
+	char	    org_instruction_id[24];
 	char	    org_processing_result[8];
 	char 	    org_description[40];
 } trade_qry_rsp_t;

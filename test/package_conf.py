@@ -76,13 +76,13 @@ package_conf={
         "54    ",#fix_length
         "0     ",#recv_no
         "A301",#msg_type
-        "17              ",#trans_no
+        "19              ",#trans_no
         "0",#signature_flag
         "0",#encrypted
         "0",#resend_flag
         "123       ",#reserved
         "                                                                                                                                ",#signaturedata
-        "ETF1707130000019",# instruction_id
+        "ETF1707130000021",# instruction_id
         "518880",# instrument_id
         "123456    ",# account_id
         "32156 ",# PUB
@@ -94,13 +94,13 @@ package_conf={
         "54    ",#fix_length
         "0     ",#recv_no
         "A303",#msg_type
-        "18              ",#trans_no
+        "20              ",#trans_no
         "0",#signature_flag
         "0",#encrypted
         "0",#resend_flag
         "123       ",#reserved
         "                                                                                                                                ",#signaturedata
-        "ETF1707130000020",# instruction_id
+        "ETF1707130000022",# instruction_id
         "518880",# instrument_id
         "123456    ",# account_id
         "32156 ",# PUB
