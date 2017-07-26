@@ -22,7 +22,7 @@ template_t login_req_template[] = {
 	{16, 'S', 24},
 	{16, 'L', 0},
 	{8, 'S', 16},
-	{10, 'L', 16},
+	{16, 'L', 0},
 	{1, 'S', 8},
 	{-1, -1, -1}
 };
@@ -84,8 +84,8 @@ template_t add_vol_req_template[] = {
 
 template_t add_vol_rsp_template[] = {
 	{5, 'S', 8},
-	{40, 'S', 40},
-	{16, 'S', 16},
+	{40, 'S', 48},
+	{16, 'S', 24},
 	{6, 'S', 8},
 	{10, 'S', 16},
 	{6, 'S', 8},
@@ -104,8 +104,8 @@ template_t cut_vol_req_template[] = {
 
 template_t cut_vol_rsp_template[] = {
 	{5, 'S', 8},
-	{40, 'S', 40},
-	{16, 'S', 16},
+	{40, 'S', 48},
+	{16, 'S', 24},
 	{6, 'S', 8},
 	{10, 'S', 16},
 	{6, 'S', 8},
@@ -114,15 +114,15 @@ template_t cut_vol_rsp_template[] = {
 };
 
 template_t trade_qry_req_template[] = {
-	{16, 'S', 16},
+	{16, 'S', 24},
 	{-1, -1, -1}
 };
 
 template_t trade_qry_rsp_template[] = {
-	{8, 'S', 16},
-	{16, 'S', 16},
-	{8, 'S', 16},
-	{40, 'S', 40},
+	{5, 'S', 8},
+	{16, 'S', 24},
+	{5, 'S', 8},
+	{40, 'S', 48},
 	{-1, -1, -1}
 };
 

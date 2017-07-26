@@ -15,6 +15,7 @@
         "map.h": "c",
         "getopt.h": "c",
         "hash.h": "c",
-        "protocol.h": "c"
+        "protocol.h": "c",
+        "thread.h": "c"
     }
 }

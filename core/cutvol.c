@@ -21,7 +21,7 @@ static int __package_cutvol_rsp_head(msg_head_t *h)
 	h->rec_length = CUT_VOL_RSP_BODY_LEN; 
 	h->rec_no = 1; 
 	strncpy(h->msg_type, MT_CUTVOL_RSP, sizeof(h->msg_type));
-	h->trans_no = 0; 
+	h->trans_no = (++g_core_data->send_trans_no); 
 	h->signature_flag = NONSIGNATURED; 
 	h->encrypted = NONENCRYTED; 
 	h->resend_flag = 0; 
@@ -116,7 +116,7 @@ static int __cutvol_check_trade_time()
 	struct tm *p;  
 	time(&timep);  
 	p =localtime(&timep);
-	sprintf(cur_time,"%d:%d", p->tm_hour, p->tm_min);
+	sprintf(cur_time,"%02d:%02d", p->tm_hour, p->tm_min);
 	
 	array_t *a = array_init(NULL);
 	int ret = 0;

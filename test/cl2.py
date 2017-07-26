@@ -10,21 +10,23 @@ def get_pkg(pkg_name,i):
 	global trans_no
 	global instruction_id
 	if pkg_name in package_conf:
-		conf = package_conf[pkg_name]
+		conf = package_conf[pkg_name]	
 		if pkg_name == 'addvol_req' and i == 0:
 			trans_no = int(conf[5])
 			instruction_id = int(conf[11][3:])
-		else:
+		elif pkg_name == 'addvol_req' and i > 0:
 			trans_no =trans_no+1
 			conf[5] = str(trans_no).ljust(16,' ')
-			
+		
 			instruction_id = instruction_id + 1
 			conf[11] =conf[11][:3] + str(instruction_id)
-			
+		else:
+			pass
 		pkg_content = ''
 		for i in conf:
 			pkg_content = pkg_content + str(i)
 		return pkg_content
+
 	else:
 		raise Exception(' pkg_name "%s" not found in config' % pkg_name)
 
@@ -37,27 +39,22 @@ class Sending(object):
 	def _send_pkg_(self, pkg_content):
 		self.client.sendall(pkg_content.encode())
 		print("send pkg", package)
-		server_data = self.client.recv(2048)
-		print("recv pkg",server_data)
+	
 
 if __name__ == '__main__':
-	pkg_name = ['login_req','ping_req','addvol_req', 'cutvol_req', 'qry_req','bizover_req','logout_req']
+	pkg_name = ['login_req','ping_req','addvol_req','bizover_req','logout_req']
 	obj = Sending()
 	trans_no = 0
 	instruction_id = 0
 	for name in pkg_name:
-		if name in ['addvol_req','cutvol_req','qry_req']:
-			for i in xrange(0,1000):
+		if name == 'addvol_req':
+			for i in xrange(0,200):
 				package = get_pkg('addvol_req',i)
-				obj._send_pkg_(package)
-				
-				package = get_pkg('cutvol_req',i)
-				obj._send_pkg_(package)
-				
-				package = get_pkg('qry_req',i)
 				obj._send_pkg_(package)
 		else:
 			package = get_pkg(name,0)
 			obj._send_pkg_(package)
-		
-
+	
+	for i in xrange(0,204):	
+		server_data = obj.client.recv(2048)
+		print("recv pkg",server_data)
