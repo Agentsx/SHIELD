@@ -2,6 +2,16 @@
 #include "utils.h"
 #include <string.h>
 
+static int __l_match(const void *a, const void *b)
+{
+    return *(long *)a == *(long *)b;
+}
+
+static int __int_match(const void *a, const void *b)
+{
+    return *(int *)a == *(int *)b;
+}
+
 static int __ll_match(const void *a, const void *b)
 {
     return *(long long *)a == *(long long *)b;
@@ -181,6 +191,10 @@ hash_t *hash_init_with_cap(int type,
 
     switch (type) {
     case L:
+	    h->hash = hash ? hash : __ll_hash;
+        h->match = match ? match : __l_match;
+        h->destroy = free;
+        break;
     case LL:
 	    h->hash = hash ? hash : __ll_hash;
         h->match = match ? match : __ll_match;
@@ -188,7 +202,7 @@ hash_t *hash_init_with_cap(int type,
         break;
     case INT:
 	    h->hash = hash ? hash : __int_hash;
-        h->match = match ? match : __ll_match;
+        h->match = match ? match : __int_match;
         h->destroy = free;
         break;
     case STR:
