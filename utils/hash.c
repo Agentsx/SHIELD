@@ -78,7 +78,8 @@ static void __list_destroy(hash_item_t *l, void (*destroy)(void *a))
     p1 = l;
     while (p1) {
         p2 = p1->next;
-        destroy(p1);
+        destroy(p1->item);
+        free(p1);
         p1 = p2; 
     }
 }
@@ -315,13 +316,12 @@ int hash_remove(hash_t *h, void *item)
 {
     int pos = __get_pos(h, item);
 
-    hash_item_t *hi = h->buckets[pos];
     hash_item_t *p1, *p2;
-    p1 = p2 = hi;
+    p1 = p2 = h->buckets[pos];
     while (p1) {
         if (h->match(item, p1->item)) {
-            if (p2 == hi) {
-                hi = p2->next;
+            if (p2 == h->buckets[pos]) {
+                h->buckets[pos] = p2->next;
                 h->destroy(p1->item);
                 free(p1);
             } else {
