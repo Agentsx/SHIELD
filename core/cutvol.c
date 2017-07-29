@@ -257,6 +257,7 @@ AFTER:
 		PUSH_MSG(cut_vol_rsp);
 	}
 
+    hash_insert(g_core_data->instructions, cut_vol_req->instruction_id);
 	log_notice("==cut vol handler end, rsp[%s]==", result_code);
 	return 0;
 }

@@ -255,6 +255,7 @@ AFTER:
 		
 		PUSH_MSG(add_vol_rsp);
 	}
+    hash_insert(g_core_data->instructions, add_vol_req->instruction_id);
 	log_notice("==add vol handler end, rsp[%s]==", result_code);
 	return 0;
 }
