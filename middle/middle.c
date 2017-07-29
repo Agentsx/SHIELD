@@ -55,7 +55,7 @@ int __resolve_head(const char *msg, msg_head_t *h)
 
 
 static void *__resolve_body(int type, const char *body, size_t *len)
-{;
+{
     type_mapping_t *type_m = NULL;
 
     if (map_get(type_map, (void *)&type, (void **)&type_m)) {

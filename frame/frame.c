@@ -115,4 +115,5 @@ void server_free()
         map_destroy(g_svr->cfg);
 		free(g_svr);
 	}
+    log_fini();
 }
