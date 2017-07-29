@@ -84,28 +84,15 @@ int __addvol_check_limit(add_vol_req_t *req)
 
 static int __addvol_check_sge_instruction(const char *instruction_id)
 {
-	hash_t *h = hash_init(STR, NULL, NULL, NULL);
-	int ret = get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date, h);
-	if (ret) {
-		log_warn("Add vol get sge instructions failed.");
-        SET_RESULT(SO_BAD);
-        goto ERROR;
-	}
-
-	char *instr = NULL;
-	ret = hash_find(h, (void *)instruction_id, (void **)&instr);
+	void *instr = NULL;
+    int ret = hash_find(g_core_data->instructions, (void *)instruction_id, &instr);
 	if (ret == 0) {
 		log_warn("Add vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
-        goto ERROR;
+        return FALSE;
     }
 
-    hash_destroy(h);
 	return TRUE;
-
-ERROR:
-    hash_destroy(h);
-    return FALSE;
 }
 
 static int __addvol_check_trade_time()
@@ -115,7 +102,7 @@ static int __addvol_check_trade_time()
 	struct tm *p;  
 	time(&timep);  
 	p =localtime(&timep);
-	sprintf(cur_time,"%02d:%02d", p->tm_hour, p->tm_min);
+	sprintf(cur_time,"%02d:%02d:%02d", p->tm_hour, p->tm_min, p->tm_sec);
 	
 	array_t *a = array_init(NULL);
 	int ret = 0;

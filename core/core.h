@@ -5,6 +5,7 @@
 #include "frame/frame.h"
 #include "include/tbl.h"
 #include "utils/map.h"
+#include "utils/hash.h"
 #include "string.h"
 
 #include <sys/time.h>
@@ -80,6 +81,7 @@ typedef struct core_data_s {
     map_t              *trade_list;
     map_t              *login_list;
     heart_beat_conf_t  *sse_heart_beat;
+    hash_t             *instructions;
 } core_data_t;
 
 extern core_data_t *g_core_data;

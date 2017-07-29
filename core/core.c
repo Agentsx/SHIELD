@@ -77,6 +77,12 @@ int core_init(map_t *cfg)
 		return -1;
     }
 
+    g_core_data->instructions = hash_init(STR, NULL, NULL, NULL);
+    if (get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date, g_core_data->instructions)) {
+        log_error("get sge instructions failed.");
+        goto ERROR;
+    }
+
     g_core_data->login_list = map_init(INT, INT);
     if (__heart_beat_conf(cfg)) {
         log_error("set heart beat conf error."); 
@@ -100,6 +106,9 @@ ERROR:
 
     if (g_core_data->login_list != NULL)
         map_destroy(g_core_data->login_list);
+
+    if (g_core_data->instructions != NULL)
+        hash_destroy(g_core_data->instructions);
 
     free(g_core_data);
 	return -1;
