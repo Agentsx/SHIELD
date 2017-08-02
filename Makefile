@@ -35,12 +35,9 @@ install:
 	rm -rf ./install
 	mkdir -p install/shield/db install/shield/log
 	cp shield    ./install/shield/
-	cp start.sh  ./install/shield/
-	cp -R libs   ./install/shield/
 	cp -R conf   ./install/shield/
 	cp db/SHIELD.DB ./install/shield/db/
 	cp db/init.sql  ./install/shield/db/
-	cp db/sqlite3   ./install/shield/db/
 
 clean:
 	rm -f $(OBJS) $(SVR_NAME)
