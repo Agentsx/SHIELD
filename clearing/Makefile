@@ -1,16 +1,17 @@
 include ../Makefile.bas
 
-all: clearing
+all: clear
 
 OBJS = clearing.o
 
 LIBRARY_PATH = -L$(ROOTPATH)/db -ldb \
 	           -L$(ROOTPATH)/libs -lsqlite3 \
 	           -L$(ROOTPATH)/libs -lzlog \
-	           -L$(ROOTPATH)/utils -lutils
-
-clearing: $(OBJS)
+	           -L$(ROOTPATH)/utils -lutils\
+			   -lpthread
+clear: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBRARY_PATH) -o $@
+	cp clear ..
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
