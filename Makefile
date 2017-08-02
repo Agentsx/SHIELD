@@ -40,7 +40,6 @@ install:
 	cp -R conf   ./install/shield/
 	cp db/SHIELD.DB ./install/shield/db/
 	cp db/init.sql  ./install/shield/db/
-	cp db/sqlite3   ./install/shield/db/
 
 clean:
 	rm -f $(OBJS) $(SVR_NAME)
