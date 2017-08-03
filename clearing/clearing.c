@@ -6,7 +6,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#define __FL__ __FILE__, __LINE__
 
 int get_trade_info_of_trade_date(sqlite3 *conn, const char *trade_date, array_t *a)
 {
@@ -19,7 +18,7 @@ int get_trade_info_of_trade_date(sqlite3 *conn, const char *trade_date, array_t 
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, ia);
 	if (ret != 0) {
-		printf("select trade info error. [%s].", err_msg);
+		log_error("select trade info error. [%s].", err_msg);
 		goto ERROR;
 	}
 	if (array_count(ia) == 0)
@@ -68,7 +67,7 @@ int get_trade_date(sqlite3 *conn, char *date)
 	
 	ret = db_exec_dql(conn, sql, &err_msg, a);
 	if (ret != 0) {
-		printf("select trade date error. [%s]." , err_msg);
+		log_error("select trade date error. [%s]." , err_msg);
 		goto ERROR;
 	}
 	
@@ -99,23 +98,23 @@ int main()
 	char trade_date[16];
 	sqlite3 *db_conn=NULL;
 	
-	/*
-	ret=log_init("conf/log.conf");
+	
+	int ret=log_init("conf/log.conf");
 	if (ret) {
         printf("log init error!\n");
         return -1;
     }
-	*/
+	log_get_category("clear"); 
 	
-	int ret=db_init("db/SHIELD.DB",&db_conn);
+	ret=db_init("db/SHIELD.DB",&db_conn);
 	if (ret) {
-        printf("db init error!\n");
+        log_error("db init error!\n");
         return -1;
     }
 
 	ret=get_trade_date(db_conn, trade_date);
 	if (ret) {
-        printf("no trade date found\n");
+        log_error("no trade date found\n");
         return -1;
     }
 	
@@ -128,7 +127,7 @@ int main()
 	
 	ret = get_trade_info_of_trade_date(db_conn,trade_date,a);
     if (ret) {
-        printf("no trade info found\n");
+        log_error("no trade info found\n");
         return -1;
     }
 

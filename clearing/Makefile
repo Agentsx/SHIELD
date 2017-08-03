@@ -7,8 +7,8 @@ OBJS = clearing.o
 LIBRARY_PATH = -L$(ROOTPATH)/db -ldb \
 	           -L$(ROOTPATH)/libs -lsqlite3 \
 	           -L$(ROOTPATH)/libs -lzlog \
-	           -L$(ROOTPATH)/utils -lutils
-
+	           -L$(ROOTPATH)/utils -lutils\
+			   -lpthread
 clear: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) $(LIBRARY_PATH) -o $@
 	cp clear ..
