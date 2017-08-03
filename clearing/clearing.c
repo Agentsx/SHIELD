@@ -19,7 +19,7 @@ int get_trade_info_of_trade_date(sqlite3 *conn, const char *trade_date, array_t 
     char *err_msg = NULL;
 	ret = db_exec_dql(conn, sql, &err_msg, ia);
 	if (ret != 0) {
-		log_error("select trade info error. [%s].", err_msg);
+		printf("select trade info error. [%s].", err_msg);
 		goto ERROR;
 	}
 	if (array_count(ia) == 0)
@@ -99,11 +99,6 @@ int main()
 	char trade_date[16];
 	sqlite3 *db_conn=NULL;
 	
-	int ret=db_init("db/SHIELD.DB",&db_conn);
-	if (ret) {
-        printf("db init error!\n");
-        return -1;
-    }
 	/*
 	ret=log_init("conf/log.conf");
 	if (ret) {
@@ -111,6 +106,13 @@ int main()
         return -1;
     }
 	*/
+	
+	int ret=db_init("db/SHIELD.DB",&db_conn);
+	if (ret) {
+        printf("db init error!\n");
+        return -1;
+    }
+
 	ret=get_trade_date(db_conn, trade_date);
 	if (ret) {
         printf("no trade date found\n");
