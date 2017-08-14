@@ -203,14 +203,12 @@ int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_rec
 		log_error("select trade info error. [%s].", err_msg);
 		goto ERROR;
 	}
-	if (array_count(ia) == 0)
-		goto ERROR;
 
     int i;
     map_t *h = NULL;
     tbl_trade_info_t  *trade_info = NULL;
     char *tmp = NULL;
-    for (i = 0; i < array_count(a); ++i) {
+    for (i = 0; i < array_count(ia); ++i) {
 	    h = (map_t *)array_get(ia, i);
         trade_info = calloc(1, sizeof(tbl_trade_info_t));
         map_get(h, "f_trade_date", (void **)&tmp);
@@ -238,7 +236,7 @@ int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_rec
         array_insert(a, (void *)trade_info);
     }
 
-    array_destroy(a);
+    array_destroy(ia);
     return 0;
 
 ERROR:
@@ -246,17 +244,26 @@ ERROR:
     return -1;
 }
 
-int get_trade_count(sqlite3 *conn,const char *trade_date,array_t *a)
+int get_trade_count(sqlite3 *conn, const char *trade_date, size_t *count)
 {
-	char *temp = "select f_sge_instruc from t_trade_info where f_trade_date=%s;";
+	char *temp = "select count(f_sge_instruc) as count from t_trade_info where f_trade_date = %s;";
     char sql[256];
-    snprintf(sql, sizeof(sql), temp, trade_date);
+	snprintf(sql, sizeof(sql), temp, trade_date);
+	
     int ret = 0;
-    char *err_msg = NULL;
+	char *err_msg = NULL;
+	array_t *a = array_init((array_item_destroy)map_destroy);
 	ret = db_exec_dql(conn, sql, &err_msg, a);
-	if (ret != 0) {
+	if (ret) {
 		log_error("select trade info error. [%s]." , err_msg);	
 		goto ERROR;
+	}
+
+	if (array_count(a) > 0) {
+		map_t *m = array_get(a, 0);
+		char *val = NULL;
+		map_get(m, "count", (void **)&val);
+		*count = atoi(val);
 	}
     array_destroy(a);
     return 0;

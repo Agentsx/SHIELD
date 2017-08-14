@@ -41,7 +41,7 @@ array_t *array_init(array_item_destroy destroy)
     array_t *a = calloc(1, sizeof(array_t));
     a->capacity = ARRAY_DEFAULT_CAP;
     a->data = (void **)calloc(ARRAY_DEFAULT_CAP, sizeof(void *));
-    a->destroy = destroy;
+    a->destroy = destroy ? destroy : free;
     return a;
 }
 
@@ -49,12 +49,8 @@ void array_destroy(array_t *a)
 {
     int i;
     for (i = 0; i < a->size; ++i) {
-        if (a->data[i] != NULL) {
-            if (a->destroy)
-                a->destroy(a->data[i]);
-            else
-                free(a->data[i]); 
-        }
+        if (a->data[i] != NULL)
+            a->destroy(a->data[i]);
     }
 
     free(a->data);

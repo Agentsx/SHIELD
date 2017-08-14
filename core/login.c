@@ -113,15 +113,14 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
         array_t *a = array_init(NULL);
         ret = get_send_trade_info_trans_no_greater_than(g_core_data->db_conn, begin_trans_no, a);
         if (ret) {
-            log_error("no trade info found, begin_trans_no[%lld].", begin_trans_no);
-            return 0;
-        }
-
-        int i;
-        tbl_trade_info_t *trade_info = NULL;
-        for (i = 0; i < array_count(a); ++i) {
-            trade_info = (tbl_trade_info_t *)array_get(a, i); 
-            __send_rsp(h, trade_info);
+            log_error("find trade info error, begin_trans_no[%lld].", begin_trans_no);
+        } else {
+            int i;
+            tbl_trade_info_t *trade_info = NULL;
+            for (i = 0; i < array_count(a); ++i) {
+                trade_info = (tbl_trade_info_t *)array_get(a, i); 
+                __send_rsp(h, trade_info);
+            }
         }
     
         array_destroy(a);
