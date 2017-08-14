@@ -26,8 +26,8 @@ static int __bizover_package_head(msg_head_t *h)
 static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 {
     int ret;
-	array_t *a = array_init(NULL);
-	ret = get_trade_count(g_core_data->db_conn , g_core_data->trade_date, a);
+	size_t count = 0;
+	ret = get_trade_count(g_core_data->db_conn , g_core_data->trade_date, &count);
 	if (ret) {
 	    log_error("failed to find trade count !");
 	    return -1;
@@ -36,9 +36,9 @@ static int __biz_over_handle(biz_over_req_t *req, biz_over_rsp_t *rsp)
 	STRNCPY(rsp->biz_code, req->biz_code);
 	rsp->total_records=array_count(a);
 
-	if(req->total_records < array_count(a)){
+	if(req->total_records < count){
 		STRNCPY(rsp->tran_status, "1");
-	} else if(req->total_records == array_count(a)){
+	} else if(req->total_records == count){
 		STRNCPY(rsp->tran_status, "0");
 	} else {
 		STRNCPY(rsp->tran_status, "2");
