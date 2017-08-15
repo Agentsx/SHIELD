@@ -1,8 +1,12 @@
 #ifndef __TRADE_TYPE_H__
 #define __TRADE_TYPE_H__
 
+#define SSE      99
+#define SZSE     98
+
 #define MAX_BIZ_CMD    0x7F
 
+/* out cmd 0x01~0x40 */
 #define CMD_LOGIN_REQ      0x01
 #define CMD_LOGIN_RSP      0x02
 #define CMD_BIZ_OVER_REQ   0x03
@@ -17,9 +21,16 @@
 #define CMD_CUT_VOL_RSP    0x0C
 #define CMD_TRADE_QRY_REQ  0x0D
 #define CMD_TRADE_QRY_RSP  0x0E
-#define CMD_ADD_FD         0xFD
-#define CMD_DEL_FD         0xFE
-#define CMD_CLOCK_MSG      0xFF
+
+/* system cmd 0x41~0x60*/
+#define CMD_ADD_FD         0x41
+#define CMD_DEL_FD         0x42
+#define CMD_CLOCK_MSG      0x43
+
+/* persistent cmd 0x61~0xA0*/
+#define CMD_UDPATE_TRADE_VOL         0x61
+#define CMD_INSERT_TRADE_INF         0x62
+#define CMD_UPDATE_CLIENT_QUANTITY   0x63
 
 #define MT_LOGIN_REQ      "S201"
 #define MT_LOGIN_RSP      "S202"

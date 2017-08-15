@@ -3,10 +3,13 @@
 #include "include/trade_type.h"
 #include "utils/log.h"
 #include "utils/utils.h"
+#include "utils/md5.h"
 #include <string.h>
 
 map_t *istype_map;
 map_t *type_map;
+
+int se;
 
 static int __resolve_msg(void *in, const char *msg, template_t *temp)
 {
@@ -90,6 +93,18 @@ int resolve_msg(shield_head_t *head)
 		goto ERROR;
 	}
 
+    char *sbody = msg + MSG_HEAD_LEN;
+
+    if (se == SZSE) { // md5 check
+        char imd5[SIGNATURE_LEN] = {0};
+        md5_str(sbody, strlen(sbody), imd5, SIGNATURE_LEN);
+        if (strncmp(imd5, h->signature_data, SIGNATURE_LEN)) {
+            log_error("md5 check error[%s][%s], discard.", imd5, h->signature_data); 
+            goto ERROR;
+        }
+        log_notice("md5 check ok");
+    }
+
 	int trade_type;
 	if ((trade_type = __get_type(h->msg_type)) == -1) {
 		log_error("message type error [%s].", h->msg_type);
@@ -97,7 +112,7 @@ int resolve_msg(shield_head_t *head)
 	}
 
 	size_t len;
-	void *b = __resolve_body(trade_type, msg + MSG_HEAD_LEN, &len);
+	void *b = __resolve_body(trade_type, sbody, &len);
 	if (b == NULL) {
 		log_error("resolve msg body [%s] error.", msg + MSG_HEAD_LEN);
 		goto ERROR;
@@ -194,15 +209,20 @@ int package_msg(shield_head_t *head)
         return 0;
     }
 
-	char *h = __package_head((msg_head_t *)(head + 1));
-
 	size_t len = 0;
-	void *b = __package_body(head->trade_type, (msg_head_t *)(head + 1), &len);
+    msg_head_t *mh = (msg_head_t *)(head + 1);
+	void *b = __package_body(head->trade_type, mh, &len);
 	if (b == NULL) {
-		free(h);
 		log_error("package msg body error.");
 		return -1;
 	}
+
+    if (se == SZSE) {// md5 check
+        md5_str((const char *)b, len - 1, mh->signature_data, SIGNATURE_LEN);
+    }
+
+	char *h = __package_head((msg_head_t *)(head + 1));
+
 
 	shield_head_t *out = calloc(1, sizeof(shield_head_t) + MSG_HEAD_LEN + len + 1);
 	out->magic_num = head->magic_num;
@@ -223,9 +243,8 @@ int package_msg(shield_head_t *head)
 	return 0;
 }
 
-int middle_init()
+static int __type_map_init()
 {
-    log_notice("------middle init begin------");
     istype_map = map_init(STR, INT);
     type_map = map_init(INT, POINTER);
 
@@ -254,20 +273,37 @@ int middle_init()
     type_mapping_t *h;
     for (i = 0; i < size; ++i) {
         if (map_get(type_map, keys[i], (void **)&h)) {
-            log_error("get val error of key[%d].", *(int *)keys[i]);
+            log_debug("get val error of key[%d].", *(int *)keys[i]);
             goto ERROR;
         } else {
             log_debug("%s %d %d %d", h->stype, h->itype, h->struct_len, h->body_len); 
         }
     }
 	map_destroy_keys(keys);
-    log_notice("------middle init end------");
 
     return 0;
 
 ERROR:
-    log_notice("------middle init end------");
     map_destroy(istype_map);
     map_destroy(type_map);
     return -1;
+}
+
+int middle_init(map_t *cfg)
+{
+    log_notice("------middle init begin------");
+    if (__type_map_init()) {
+        log_error("type map init error."); 
+        return -1;
+    }
+
+    char *tmp = NULL;
+    if (map_get(cfg, "se", (void **)tmp)) {
+        log_error("get se from cfg error."); 
+        return -1;
+    }
+
+    se = atoi(tmp);
+
+    return 0;
 }

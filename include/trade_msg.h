@@ -25,6 +25,8 @@
 #define  NONENCRYTED   		0
 #define  ENCRYTED       	1
 
+#define  SIGNATURE_LEN      128
+
 typedef struct msg_head_s {
 	long long   msg_len;
 	long long   fix_length;
