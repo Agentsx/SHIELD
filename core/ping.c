@@ -59,8 +59,8 @@ int send_ping(int fd)
     gettimeofday( &timenow, NULL );
 	int now_time_ms = timenow.tv_usec/10000;
 
-	time_t timep;  
-	struct tm *p;  
+	time_t timep;
+	struct tm *p;
 	time(&timep);  
 	p =localtime(&timep);
 
