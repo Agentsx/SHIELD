@@ -1,14 +1,12 @@
 #ifndef __ERR_H__
 #define __ERR_H__
 
+/* login error code. begin*/
 #define USER_NOT_FOUND        			("1", "user not found")
 #define WRONG_PASSWORD         			("1", "wrong password")
 #define USER_STATUS_ERR       		 	("1", "user status error")
 #define TRADE_DATE_ERR         			("1", "trade date error")
-#define APPLY_LIMIT_NOT_FOUND 			("1", "apply limit not found")
-#define REDEMPTION_LIMIT_NOT_FOUND	 	("1", "redemption limit not found")
-#define QUANTITY_ERROR         			("1", "quantity is over range")
-#define TRADE_TIME_ERR         			("1", "not in trade time now")
+/* end */
 
 #define LOGIN_SUCCESS          		("0", "login ok")
 #define TRADE_SUCCESS          		("00001", "trade ok")
@@ -23,7 +21,10 @@
 #define REDEMPTION_SUCCESS     		("00009", "redemption ok")
 #define BEYOND_REDEMPTION_LIMIT     ("000010", "beyond redemption limit")
 
-
+#define APPLY_LIMIT_NOT_FOUND 			("00011", "apply limit not found")
+#define REDEMPTION_LIMIT_NOT_FOUND	 	("00012", "redemption limit not found")
+#define QUANTITY_ERROR         			("00013", "quantity is over range")
+#define TRADE_TIME_ERR         			("00014", "not in trade time now")
 
 
 
