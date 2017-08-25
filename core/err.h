@@ -19,7 +19,7 @@
 #define INSTRUCTION_HANDLED    		("00008", "instruction handled")
 
 #define REDEMPTION_SUCCESS     		("00009", "redemption ok")
-#define BEYOND_REDEMPTION_LIMIT     ("000010", "beyond redemption limit")
+#define BEYOND_REDEMPTION_LIMIT     ("00010", "beyond redemption limit")
 
 #define APPLY_LIMIT_NOT_FOUND 			("00011", "apply limit not found")
 #define REDEMPTION_LIMIT_NOT_FOUND	 	("00012", "redemption limit not found")
