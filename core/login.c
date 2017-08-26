@@ -111,9 +111,9 @@ static int __trans_no_handler(shield_head_t *h, long long begin_trans_no)
         int ret;
 
         array_t *a = array_init(NULL);
-        ret = get_send_trade_info_trans_no_greater_than(g_core_data->db_conn, begin_trans_no, a);
+        ret = get_send_trade_info_trans_no_greater_than(g_core_data->db_conn, g_core_data->trade_date, begin_trans_no, a);
         if (ret) {
-            log_error("find trade info error, begin_trans_no[%lld].", begin_trans_no);
+            log_error("find trade info error, trade_date[%s] begin_trans_no[%lld].", g_core_data->trade_date, begin_trans_no);
         } else {
             int i;
             tbl_trade_info_t *trade_info = NULL;
@@ -142,8 +142,6 @@ int login_req_handler(shield_head_t *h)
 	if (ret)
         goto AFTER;
 
-    __trans_no_handler(h, login_req->begin_trans_no);
-
     SET_RESULT(LOGIN_SUCCESS);
 
     int login = 1;
@@ -167,6 +165,10 @@ AFTER:
 	    
 	    PUSH_MSG(login_rsp);
     }
+
+    if (result_code[0] == LOGIN_OK)
+        __trans_no_handler(h, login_req->begin_trans_no);    
+
 	log_notice("==login req handler end. rsp[%s]==", result_code);
 
 	return 0;
