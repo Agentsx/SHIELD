@@ -298,7 +298,7 @@ int middle_init(map_t *cfg)
     }
 
     char *tmp = NULL;
-    if (map_get(cfg, "se", (void **)tmp)) {
+    if (map_get(cfg, "se", (void **)&tmp)) {
         log_error("get se from cfg error."); 
         return -1;
     }
