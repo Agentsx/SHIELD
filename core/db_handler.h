@@ -12,7 +12,7 @@ int get_trade_date(sqlite3 *conn, char *date);
 int get_user(sqlite3 *conn, const char *user_name, tbl_user_t *user);
 int get_client(sqlite3 *conn, const char *acc_no, tbl_client_t *client);
 int get_max_recv_no(sqlite3 *conn, const char *trade_date, long long *max_recv_no);
-int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_recv_no, array_t *a);
+int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, const char *trade_date, long long begin_recv_no, array_t *a);
 int get_trade_time(sqlite3 *conn, array_t *a);
 int get_trade_count(sqlite3 *conn, const char *trade_date, size_t *count);
 int get_trade_list(sqlite3 *conn, map_t *h, const char *trade_date);

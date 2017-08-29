@@ -189,11 +189,11 @@ ERROR:
     return -1;
 }
 
-int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, long long begin_recv_no, array_t *a)
+int get_send_trade_info_trans_no_greater_than(sqlite3 *conn, const char *trade_date, long long begin_recv_no, array_t *a)
 {
-    char *temp = "select * from t_trade_info where f_trans_no > %lld and f_recv_type = 1;";
+    char *temp = "select * from t_trade_info where f_trade_date = %s and f_trans_no > %lld and f_recv_type = 1;";
     char sql[256];
-    snprintf(sql, sizeof(sql), temp, begin_recv_no);
+    snprintf(sql, sizeof(sql), temp, trade_date, begin_recv_no);
 
 	array_t *ia = array_init((array_item_destroy)map_destroy);
     int ret = 0;
