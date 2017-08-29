@@ -23,6 +23,8 @@
 #define QRY_OK   "00001"
 #define QRY_FAIL "10000"
 
+#define LOGIN_OK '0'
+
 extern char result_code[8];
 extern char result_desc[32];
 

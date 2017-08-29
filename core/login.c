@@ -142,8 +142,6 @@ int login_req_handler(shield_head_t *h)
 	if (ret)
         goto AFTER;
 
-    __trans_no_handler(h, login_req->begin_trans_no);
-
     SET_RESULT(LOGIN_SUCCESS);
 
     int login = 1;
@@ -167,6 +165,10 @@ AFTER:
 	    
 	    PUSH_MSG(login_rsp);
     }
+
+    if (result_code[0] == LOGIN_OK)
+        __trans_no_handler(h, login_req->begin_trans_no);    
+
 	log_notice("==login req handler end. rsp[%s]==", result_code);
 
 	return 0;
