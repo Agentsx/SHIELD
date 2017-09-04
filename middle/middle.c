@@ -97,7 +97,7 @@ int resolve_msg(shield_head_t *head)
 
     if (se == SZSE) { // md5 check
         char imd5[SIGNATURE_LEN] = {0};
-        md5_str(sbody, strlen(sbody), imd5, SIGNATURE_LEN);
+        md5_str(sbody, h->msg_len - MSG_HEAD_LEN, imd5, SIGNATURE_LEN);
         if (strncmp(imd5, h->signature_data, SIGNATURE_LEN)) {
             log_error("md5 check error[%s][%s], discard.", imd5, h->signature_data); 
             goto ERROR;
