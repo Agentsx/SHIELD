@@ -4,7 +4,7 @@
 #define SSE      99
 #define SZSE     98
 
-#define MAX_BIZ_CMD    0x7F
+#define MAX_BIZ_CMD    0x40
 
 /* out cmd 0x01~0x40 */
 #define CMD_LOGIN_REQ      0x01
