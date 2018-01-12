@@ -24,7 +24,7 @@ int logout_req_handler(shield_head_t *h)
 {
 	log_notice("==logout req handler begin==");
 	
-	CALLOC_MSG(logout_rsp, h->fd, CMD_LOGOUT_RSP);
+	CALLOC_MSG(logout_rsp, h->fd, CMD_LOGOUT_RSP, h->log_id);
 
 	__package_head(&logout_rsp->msg_head);
 

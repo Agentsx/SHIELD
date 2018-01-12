@@ -20,6 +20,7 @@
 thread_pool_t *tp = NULL;
 
 static pthread_key_t __thread_key;
+static long long log_id;
 
 log_category_t *__get_log_category()
 {
@@ -128,6 +129,7 @@ static void *__manage_routine(void *ctx)
 
 			if (head) {
                 if (head->magic_num == MAGIC_NUM) {
+					log_info("[%lld] send to middle.", head->log_id);
 				    push_to(head, tp->middle_in);
 			    } else {
 			    	unsigned int st = *(unsigned int*)head;
@@ -159,6 +161,7 @@ static void *__manage_routine(void *ctx)
                         __push_del_fd(head->fd, tp->read_in);
                     }
                 } else {
+					log_info("[%lld] send to write.", head->log_id);
 				    push_to(head, tp->write_in);
                 }
 			} else {
@@ -210,7 +213,7 @@ static void *__read_routine(void *ctx)
             int fd = events[i].data.fd;
             if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                 epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
-				log_info("fd [%d] error.", fd);
+				log_info("fd [%d] error, delete it. events[%d].", fd, events[i].events);
                 __push_del_fd(fd, tp->read_out);
             }
             if (events[i].events & EPOLLIN) {
@@ -222,13 +225,15 @@ static void *__read_routine(void *ctx)
 				log_info("read fd[%d] end ......", fd);
                 if (ret < 0) {
                     // bad fd, delete it
-					log_error("read msg from fd error.");
+					log_error("read msg from fd[%d] error.", fd);
 					epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
                 	__push_del_fd(fd, tp->read_out);
                 } else if (msg != NULL) { // good msg, put it
-					log_info("read msg[%s] from fd length[%ld].", (char *)msg, len);
+					log_id++;
+					log_info("[%lld] read msg[%s] from fd length[%ld].", log_id, (char *)msg, len);
 					shield_head_t *h = calloc(1, sizeof(shield_head_t) + len);
 					h->magic_num = MAGIC_NUM;
+					h->log_id = log_id;
 					h->len = len;
 					h->fd = fd;
                     memcpy(h + 1, msg, len);
@@ -253,15 +258,15 @@ static void *__write_routine(void *ctx)
 			continue;
 
         if (h->magic_num == MAGIC_NUM) {
-        	log_info("will write to fd[%d], message[%s], length[%ld].", h->fd, (char *)(h + 1), h->len);
+        	log_info("[%lld] will write to fd[%d], message[%s], length[%ld].", h->log_id, h->fd, (char *)(h + 1), h->len - 1);
         	int ret;
         	ret = tp->sse_protocol->pro_write(h->fd, h + 1, h->len - 1); // tail 0x0 not to send
-        	log_info("length[%d] wroten.\n", ret);
+        	log_info("[%lld] length[%d] wroten.\n", h->log_id, ret);
 			free(h);
 		} else {
         	log_error("read from write in error.");
 		}
-        log_info("head [%p].", h);
+        log_info("[%lld] head [%p].", h->log_id, h);
         usleep(SLEEPTIME);
     }
     
@@ -303,9 +308,9 @@ static void *__core_routine(void *ctx)
         if (head && head->magic_num == MAGIC_NUM) {
 			ret = g_svr->core->handler(head);
 			if (ret)
-				log_error("core handle msg error [%d].", ret);
+				log_error("[%lld] core handle msg error [%d].", head->log_id, ret);
 			else
-				log_info("core handle msg OK.");
+				log_info("[%lld] core handle msg OK.", head->log_id);
 		} else {
 			log_info("read from core in error.");
 		}
@@ -368,7 +373,7 @@ static void *__middle_routine(void *ctx)
 				if (ret)
 					log_error("middle handle in message error [%d].", ret);
 			} else {
-					log_error("read from middle in error.");
+				log_error("read from middle in error.");
 			}
 
             if (head) free(head);

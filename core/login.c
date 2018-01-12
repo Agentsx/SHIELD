@@ -55,19 +55,17 @@ static int __login_check(login_req_t *login_req)
     return 0;
 }
 
-static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int body_len)
+static int __package_rsp_head(msg_head_t *h, const char *type, int msg_len, int body_len, int trans_no)
 {
 	h->msg_len = msg_len; 
 	h->fix_length = NONFIX; 
 	h->rec_length = body_len; 
 	h->rec_no = 1;
 	strncpy(h->msg_type, type, sizeof(h->msg_type));
-	h->trans_no = 0;
+	h->trans_no = trans_no;
 	h->signature_flag = NONSIGNATURED;
 	h->encrypted = NONENCRYTED;
 	h->resend_flag = 0; 
-	strncpy(h->reserved, "123", sizeof(h->reserved)); 
-	strncpy(h->signature_data, "123", sizeof(h->signature_data)); 
 	return 0;
 }
 
@@ -88,18 +86,22 @@ static int __send_rsp(shield_head_t *h, const tbl_trade_info_t *trade_info)
 
     switch (trade_info->msg_type) {
 	case CMD_ADD_VOL_RSP: {
-            CALLOC_MSG(add_vol_rsp, h->fd, trade_info->msg_type);
-            __package_rsp_head(&add_vol_rsp->msg_head, MT_ADDVOL_RSP, ADD_VOL_RSP_BODY_LEN + MSG_HEAD_LEN, ADD_VOL_RSP_BODY_LEN);
+            CALLOC_MSG(add_vol_rsp, h->fd, trade_info->msg_type, h->log_id);
+            __package_rsp_head(&add_vol_rsp->msg_head, MT_ADDVOL_RSP, ADD_VOL_RSP_BODY_LEN + MSG_HEAD_LEN,
+			                   ADD_VOL_RSP_BODY_LEN, trade_info->trans_no);
             __package_trade_rsp_body(add_vol_rsp);
 
 	        PUSH_MSG(add_vol_rsp);
+			break;
         }
 	case CMD_CUT_VOL_RSP: {
-            CALLOC_MSG(cut_vol_rsp, h->fd, trade_info->msg_type);
-            __package_rsp_head(&cut_vol_rsp->msg_head, MT_CUTVOL_RSP, CUT_VOL_RSP_BODY_LEN + MSG_HEAD_LEN, CUT_VOL_RSP_BODY_LEN);
+            CALLOC_MSG(cut_vol_rsp, h->fd, trade_info->msg_type, h->log_id);
+            __package_rsp_head(&cut_vol_rsp->msg_head, MT_CUTVOL_RSP, CUT_VOL_RSP_BODY_LEN + MSG_HEAD_LEN,
+			                   CUT_VOL_RSP_BODY_LEN, trade_info->trans_no);
             __package_trade_rsp_body(cut_vol_rsp);
 
 	        PUSH_MSG(cut_vol_rsp);
+			break;
         }
     }
     return 0;
@@ -152,9 +154,9 @@ int login_req_handler(shield_head_t *h)
 
 AFTER:
     {
-	    CALLOC_MSG(login_rsp, h->fd, CMD_LOGIN_RSP);
+	    CALLOC_MSG(login_rsp, h->fd, CMD_LOGIN_RSP, h->log_id);
 
-	    __package_rsp_head(&login_rsp->msg_head, MT_LOGIN_RSP, LOGIN_RSP_BODY_LEN + MSG_HEAD_LEN, LOGIN_RSP_BODY_LEN);
+	    __package_rsp_head(&login_rsp->msg_head, MT_LOGIN_RSP, LOGIN_RSP_BODY_LEN + MSG_HEAD_LEN, LOGIN_RSP_BODY_LEN, 0);
 
 	    login_rsp->result[0] = result_code[0];
 	    login_rsp->heart_bt_int = 0;
@@ -163,11 +165,13 @@ AFTER:
 	    strncpy(login_rsp->description, result_desc, sizeof(login_rsp->description));
 	    login_rsp->connection_type[0] = 'G';
 	    
-	    PUSH_MSG(login_rsp);
+	    PUSH_LOGIN_RSP(login_rsp);
     }
 
-    if (result_code[0] == LOGIN_OK)
+    if (result_code[0] == LOGIN_OK) {
         __trans_no_handler(h, login_req->begin_trans_no);    
+		g_core_data->send_trans_no = login_req->begin_trans_no;
+	}
 
 	log_notice("==login req handler end. rsp[%s]==", result_code);
 

@@ -85,8 +85,7 @@ int __cutvol_check_limit(cut_vol_req_t *req)
 
 static int __cutvol_check_sge_instruction(const char *instruction_id)
 {
-	void *instr = NULL;
-	int ret = hash_find(g_core_data->instructions, (void *)instruction_id, &instr);
+	int ret = hash_find(g_core_data->instructions, (void *)instruction_id);
 	if (ret == 0) {
 		log_warn("cut vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
@@ -223,7 +222,7 @@ static int __cutvol_update_db(cut_vol_req_t *req, cut_vol_rsp_t *rsp)
 
 int cut_vol_req_handler(shield_head_t *h)
 {
-	log_notice("==cut vol handler begin==");
+	log_notice("[%lld] ==cut vol handler begin==", h->log_id);
 
 	CLEAR_RESULT();
 	
@@ -240,7 +239,7 @@ int cut_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-		CALLOC_MSG(cut_vol_rsp, h->fd, CMD_CUT_VOL_RSP);
+		CALLOC_MSG(cut_vol_rsp, h->fd, CMD_CUT_VOL_RSP, h->log_id);
 
 		__package_cutvol_rsp_head(&cut_vol_rsp->msg_head);
 
@@ -258,6 +257,6 @@ AFTER:
 	}
 
     hash_insert(g_core_data->instructions, cut_vol_req->instruction_id);
-	log_notice("==cut vol handler end, rsp[%s]==", result_code);
+	log_notice("[%lld] ==cut vol handler end, rsp[%s]==", h->log_id, result_code);
 	return 0;
 }

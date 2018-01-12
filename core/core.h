@@ -45,14 +45,26 @@ extern char result_desc[32];
 	strncpy(result_code, _EC(x), sizeof(result_code)); \
 	strncpy(result_desc, _EM(x), sizeof(result_desc));
 
-#define CALLOC_MSG(s, ifd, type) \
+#define CALLOC_MSG(s, ifd, type, logid) \
 	shield_head_t *__##s = calloc(1, sizeof(shield_head_t) + sizeof(s##_t)); \
 	__##s->magic_num = MAGIC_NUM; \
+	__##s->log_id = logid; \
 	__##s->fd = ifd; \
 	__##s->trade_type = type; \
 	s##_t *s = (s##_t *)(__##s + 1);
 
 #define PUSH_MSG(s) \
+	if (should_push()) {\
+		g_svr->core->push_to_middle(__##s); \
+	} else { \
+		log_notice("core handle end, but will not push to middle.");	\
+		free(__##s); \
+	}
+
+#define PUSH_LOGIN_RSP(s) \
+	g_svr->core->push_to_middle(__##s);
+
+#define PUSH_PING_RSP(s) \
 	g_svr->core->push_to_middle(__##s);
 
 
@@ -82,7 +94,7 @@ typedef struct core_data_s {
 	sqlite3            *db_conn;
     map_t              *trade_list;
     map_t              *login_list;
-    heart_beat_conf_t  *sse_heart_beat;
+    heart_beat_conf_t  *heart_beat;
     hash_t             *instructions;
 } core_data_t;
 
@@ -99,5 +111,6 @@ int  add_vol_req_handler(shield_head_t *h);
 int  cut_vol_req_handler(shield_head_t *h);
 int  trade_qry_req_handler(shield_head_t *h);
 int  send_ping(int fd);
+int  should_push();
 
 #endif

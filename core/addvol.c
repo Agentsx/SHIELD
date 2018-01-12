@@ -84,8 +84,7 @@ int __addvol_check_limit(add_vol_req_t *req)
 
 static int __addvol_check_sge_instruction(const char *instruction_id)
 {
-	void *instr = NULL;
-    int ret = hash_find(g_core_data->instructions, (void *)instruction_id, &instr);
+    int ret = hash_find(g_core_data->instructions, (void *)instruction_id);
 	if (ret == 0) {
 		log_warn("Add vol sge instructions already handled.");
         SET_RESULT(INSTRUCTION_HANDLED);
@@ -222,7 +221,7 @@ static int __addvol_update_db(add_vol_req_t *req, add_vol_rsp_t *rsp)
 
 int add_vol_req_handler(shield_head_t *h)
 {
-	log_notice("==add vol handler begin==");
+	log_notice("[%lld] ==add vol handler begin==", h->log_id);
 
 	CLEAR_RESULT();
 	
@@ -239,7 +238,7 @@ int add_vol_req_handler(shield_head_t *h)
 
 AFTER:
 	{
-		CALLOC_MSG(add_vol_rsp, h->fd, CMD_ADD_VOL_RSP);
+		CALLOC_MSG(add_vol_rsp, h->fd, CMD_ADD_VOL_RSP, h->log_id);
 
 		__package_addvol_rsp_head(&add_vol_rsp->msg_head);
 
@@ -255,9 +254,8 @@ AFTER:
 		
 		PUSH_MSG(add_vol_rsp);
 	}
+
     hash_insert(g_core_data->instructions, add_vol_req->instruction_id);
-	log_notice("==add vol handler end, rsp[%s]==", result_code);
+	log_notice("[%lld] ==add vol handler end, rsp[%s]==", h->log_id, result_code);
 	return 0;
 }
-	
-

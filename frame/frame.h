@@ -12,6 +12,7 @@
 
 typedef struct shield_head_s {
 	unsigned int magic_num;
+	long long    log_id;
 	size_t       len;
 	int          fd;
 	long long    trade_type;

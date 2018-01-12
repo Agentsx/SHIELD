@@ -7,9 +7,9 @@
 
 static int __package_head(msg_head_t *h)
 {
-	h->msg_len = LOGOUT_RSP_BODY_LEN + MSG_HEAD_LEN; 
+	h->msg_len = TRADE_QRY_RSP_BODY_LEN + MSG_HEAD_LEN; 
 	h->fix_length = NONFIX; 
-	h->rec_length = LOGOUT_RSP_BODY_LEN; 
+	h->rec_length = TRADE_QRY_RSP_BODY_LEN; 
 	h->rec_no = 1; 
 	strncpy(h->msg_type, MT_TRADE_QRY_RSP, sizeof(h->msg_type));
 	h->trans_no = 0; 
@@ -39,17 +39,17 @@ static int __trade_qry_handle(trade_qry_req_t *req, trade_qry_rsp_t *rsp)
 
 int  trade_qry_req_handler(shield_head_t *h)
 {
-	log_notice("==Trade qry handler begin==");
+	log_notice("[%lld] ==Trade qry handler begin==", h->log_id);
 
     trade_qry_req_t *req = (trade_qry_req_t *)(h + 1);
 
-	CALLOC_MSG(trade_qry_rsp, h->fd, CMD_TRADE_QRY_RSP);
+	CALLOC_MSG(trade_qry_rsp, h->fd, CMD_TRADE_QRY_RSP, h->log_id);
 	__package_head(&trade_qry_rsp->msg_head);
 
     __trade_qry_handle(req, trade_qry_rsp);
 
 	PUSH_MSG(trade_qry_rsp);
-	log_notice("==Trade qry handler end==");
+	log_notice("[%lld] ==Trade qry handler end==", h->log_id);
 
 	return 0;
 }

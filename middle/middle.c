@@ -76,7 +76,7 @@ static void *__resolve_body(int type, const char *body, size_t *len)
 
 int resolve_msg(shield_head_t *head)
 {
-	log_notice("middle resolve msg been called. cmd[%lld]", head->trade_type);
+	log_notice("[%lld] middle resolve msg been called. cmd[%lld]", head->log_id, head->trade_type);
 
     if (head->trade_type > MAX_BIZ_CMD) { /* system msg */
 		shield_head_t *new = calloc(1, sizeof(shield_head_t));
@@ -121,8 +121,9 @@ int resolve_msg(shield_head_t *head)
 	memcpy(b, h, sizeof(msg_head_t));
 
 	shield_head_t *newh = calloc(1, sizeof(shield_head_t) + len);
-	newh->fd = head->fd;
 	newh->magic_num = head->magic_num;
+	newh->log_id = head->log_id;
+	newh->fd = head->fd;
 	newh->len = len;
 	newh->trade_type = trade_type;
 	memcpy(newh + 1, b, len);
@@ -174,7 +175,9 @@ char *__package_head(msg_head_t *head)
 {
 	char *h = calloc(1, MSG_HEAD_LEN + 1);
 	
-	memset(h, 0x20, MSG_HEAD_LEN);
+	if (se != SZSE) /* damn it, it not a good idea to write code like this */
+		memset(h, 0x20, MSG_HEAD_LEN);
+
 	__package_msg(head, h, head_template);
 
 	return h;
@@ -192,7 +195,9 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 	char *msg = NULL;
 	msg = calloc(1, m->body_len + 1);
 	*len = m->body_len + 1;
-	memset(msg, 0x20, m->body_len);
+	if (se != SZSE) /* damn it, it not a good idea to write code like this */
+		memset(msg, 0x20, m->body_len);
+
 	__package_msg(h + 1, msg, m->templ);
 
 	return msg;
@@ -200,7 +205,7 @@ char *__package_body(long long type, msg_head_t *h, size_t *len)
 
 int package_msg(shield_head_t *head)
 {
-	log_notice("middle package msg been called. cmd[%lld]", head->trade_type);
+	log_notice("[%lld] middle package msg been called. cmd[%lld]", head->log_id, head->trade_type);
 
     if (head->trade_type > MAX_BIZ_CMD) {  // system msg
 		shield_head_t *new = calloc(1, sizeof(shield_head_t));  /* avoid double free */
@@ -213,7 +218,7 @@ int package_msg(shield_head_t *head)
     msg_head_t *mh = (msg_head_t *)(head + 1);
 	void *b = __package_body(head->trade_type, mh, &len);
 	if (b == NULL) {
-		log_error("package msg body error.");
+		log_error("[%lld] package msg body error.", head->log_id);
 		return -1;
 	}
 
@@ -223,9 +228,9 @@ int package_msg(shield_head_t *head)
 
 	char *h = __package_head((msg_head_t *)(head + 1));
 
-
 	shield_head_t *out = calloc(1, sizeof(shield_head_t) + MSG_HEAD_LEN + len + 1);
 	out->magic_num = head->magic_num;
+	out->log_id = head->log_id;
 	out->fd = head->fd;
 	out->trade_type = head->trade_type;
 	out->len = MSG_HEAD_LEN + len;
@@ -235,7 +240,7 @@ int package_msg(shield_head_t *head)
 	free(h);
 	free(b);
 
-	log_notice("middle package msg[%s] ok.", (char *)(out + 1));
+	log_notice("[%lld] middle package msg[%s] ok.", out->log_id, (char *)(out + 1));
 	log_notice("out[%p].", out);
 
 	MIDDLE_PUSH_OUT(out);

@@ -54,7 +54,7 @@ int  biz_over_req_handler(shield_head_t *h)
 
 	biz_over_req_t *req = (biz_over_req_t *)(h + 1);
    	
-	CALLOC_MSG(biz_over_rsp, h->fd, CMD_BIZ_OVER_RSP);
+	CALLOC_MSG(biz_over_rsp, h->fd, CMD_BIZ_OVER_RSP, h->log_id);
 
 	__bizover_package_head(&biz_over_rsp->msg_head);
 	

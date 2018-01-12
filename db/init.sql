@@ -2,6 +2,7 @@ delete from t_trade_date;
 delete from t_trade_list;
 delete from t_trade_time;
 delete from t_trade_vol;
+delete from t_trade_info;
 
 insert into t_trade_date values('20170707');
 insert into t_trade_list values('20170707', '518880', 30000000, 3000000);

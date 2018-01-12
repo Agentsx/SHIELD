@@ -246,7 +246,7 @@ ERROR:
 
 int get_trade_count(sqlite3 *conn, const char *trade_date, size_t *count)
 {
-	char *temp = "select count(f_sge_instruc) as count from t_trade_info where f_trade_date = %s;";
+	char *temp = "select count(f_sge_instruc) as count from t_trade_info where f_trade_date = %s and f_recv_type = 1;";
     char sql[256];
 	snprintf(sql, sizeof(sql), temp, trade_date);
 	

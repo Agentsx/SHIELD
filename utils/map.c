@@ -1,5 +1,5 @@
 #include "map.h"
-#include "log.h"
+// #include "log.h"
 #include "utils.h"
 #include <string.h>
 
@@ -292,7 +292,7 @@ int map_replace(map_t *m, void *key, void *val, void **oldval)
 
     map_pair_t *p;
     if ((p = __map_find(key, m->buckets[pos], m->match)) == NULL) {
-		log_debug("map replace find NULL. pos[%d]", pos);
+		//log_debug("map replace find NULL. pos[%d]", pos);
         map_put(m, key, val);
         *oldval = NULL;
     } else {

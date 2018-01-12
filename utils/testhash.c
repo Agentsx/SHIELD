@@ -1,4 +1,5 @@
-#include "ihash.h"
+#include "newhash.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,40 +10,11 @@ struct A {
     int b;
 };
 
-static unsigned int __my_hash(const void *a)
-{
-    if (a == NULL)
-        return 0;
-
-    const struct A *ia = a;
-
-    return (unsigned int)ia->a;
-}
-
-static void __my_destroy(void *a)
-{
-    free(a);
-}
-
-static int __my_match(const void *a, const void *b)
-{
-    const struct A *ia = a;
-    const struct A *ib = b;
-
-    if (ia == NULL && ib == NULL)
-        return 1;
-
-    if (ia == NULL || ib == NULL)
-        return 0;
- 
-    return ia->a == ib->a && ia->b == ib->b;
-}
-
 int main(int argc, char *argv[])
 {
     /* Integer test */
-    // begin
-    hash_t *h = hash_init(LL, NULL, NULL, NULL);
+    /* // begin
+    hash_t *h = hash_init(LL);
 
     long long i;
     for (i = 0; i < 1000; ++i) {
@@ -52,22 +24,23 @@ int main(int argc, char *argv[])
     i = 900;
     hash_remove(h, &i);
 
-    long long *gval = NULL;
     int ret; 
     for (i = 0; i < 1000; ++i) {
-        ret = hash_find(h, (void *)&i, (void **)&gval);
-        printf("find [%d] value [%lld].\n", ret, ret == 0? *gval : -1);
+        ret = hash_find(h, (void *)&i);
+        printf("find [%d] value [%lld].\n", ret, i);
     }
 
     hash_destroy(h);
 
     // end
+	*/
+
     /* String test */
-    /* // begin
+     // begin
     
     char s[53] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    hash_t *h = hash_init(STR, NULL, NULL, NULL);
+    hash_t *h = hash_init(STR);
 
     srandom(time(NULL));
 
@@ -90,19 +63,16 @@ int main(int argc, char *argv[])
         hash_insert(h, key[i]);
     }
 
-    char *gval = NULL;
     int  ret;
     for (i = 0; i < KEY_NUM; ++i) {
-        ret = hash_find(h, key[i], (void **)&gval);
+        ret = hash_find(h, key[i]);
         if (ret != 0)
             printf("Not found val from hash of key[%s] error.\n", key[i]);
         else
-            printf("key[%s]--val[%s]\n", key[i], gval);
-        gval = NULL;
+            printf("key[%s]--val[%s]\n", key[i], key[i]);
     }
 
     hash_destroy(h);
-    */ // end
 
     /* POINTER TEST */
     /* // begin

@@ -9,40 +9,56 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 core_data_t *g_core_data;
 map_t       *fd_heart;
+int failure_rate;
 
 char result_code[8];
 char result_desc[32];
 
+static void __set_failure_rate(map_t *cfg)
+{
+	char *tmp = NULL;
+	if (map_get(cfg, "failure_rate", (void **)&tmp))
+		log_warn("failure rate not found");
+	else
+		failure_rate = atoi(tmp);
+}
+
+int should_push()
+{
+	return rand() % 100 >= failure_rate;
+}
+
 static int __heart_beat_conf(map_t *cfg)
 {
-    g_core_data->sse_heart_beat = calloc(1, sizeof(heart_beat_conf_t));
+    g_core_data->heart_beat = calloc(1, sizeof(heart_beat_conf_t));
 
     char *tmp = NULL;
     int  ret;
-    ret = map_get(cfg, "sse_heart_beat_interval", (void **)&tmp);
+    ret = map_get(cfg, "heart_beat_interval", (void **)&tmp);
     if (ret) {
-        log_error("get sse_heart_beat_interval error."); 
+        log_error("get heart_beat_interval error."); 
         goto ERROR;
     }
 
-    g_core_data->sse_heart_beat->interval = atoi(tmp);
+    g_core_data->heart_beat->interval = atoi(tmp);
 
-    ret = map_get(cfg, "sse_heart_beat_lose", (void **)&tmp);
+    ret = map_get(cfg, "heart_beat_lose", (void **)&tmp);
     if (ret) {
-        log_error("get sse_heart_beat_interval error."); 
+        log_error("get heart_beat_interval error."); 
         goto ERROR;
     }
 
-    g_core_data->sse_heart_beat->lose_interval = atoi(tmp);
+    g_core_data->heart_beat->lose_interval = atoi(tmp);
 
     return 0;
 
 ERROR:
-    free(g_core_data->sse_heart_beat);
-    g_core_data->sse_heart_beat = NULL;
+    free(g_core_data->heart_beat);
+    g_core_data->heart_beat = NULL;
     return -1;
 }
 
@@ -77,7 +93,7 @@ int core_init(map_t *cfg)
 		return -1;
     }
 
-    g_core_data->instructions = hash_init(STR, NULL, NULL, NULL);
+    g_core_data->instructions = hash_init(STR);
     if (get_sge_instrctions(g_core_data->db_conn, g_core_data->trade_date, g_core_data->instructions)) {
         log_error("get sge instructions failed.");
         goto ERROR;
@@ -93,6 +109,9 @@ int core_init(map_t *cfg)
         log_error("fd heart map init error"); 
         goto ERROR;
     }
+
+	__set_failure_rate(cfg);
+	srand((unsigned int)time(NULL));
 
     log_debug("------core init end------");
 
@@ -193,11 +212,11 @@ static int __lock_msg_handle()
     for (i = 0; i < size; ++i) {
         if (map_get(fd_heart, keys[i], (void **)&t) == 0) {
             int fd = *(int *)keys[i];
-            if (t->had_sent && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->lose_interval) {
+            if (t->had_sent && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->heart_beat->lose_interval) {
                 log_notice("lose heart beat. delete fd[%d]", fd);
                 __del_fd_handle(fd);
                 __send_del_fd(fd);
-            } else if (t->had_sent == 0 && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->sse_heart_beat->interval) {
+            } else if (t->had_sent == 0 && curr.tv_sec - t->last_beat.tv_sec >= g_core_data->heart_beat->interval) {
                 fd_heart_t *tmp = calloc(1, sizeof(fd_heart_t));
                 tmp->had_sent = 1;
                 tmp->last_beat.tv_sec = curr.tv_sec;

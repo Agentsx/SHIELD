@@ -30,14 +30,14 @@ int ping_req_handler(shield_head_t *h)
 	log_notice("==ping handler begin==");
 
     ping_req_t *ping_req = (ping_req_t *)(h + 1);
-	CALLOC_MSG(ping_rsp, h->fd, CMD_PING_RSP);
+	CALLOC_MSG(ping_rsp, h->fd, CMD_PING_RSP, 0);
 
 	__package_ping_head(&ping_rsp->msg_head, MT_PING_RSP, PING_RSP_BODY_LEN + MSG_HEAD_LEN, PING_RSP_BODY_LEN);
 
 	STRNCPY(ping_rsp->date_time, ping_req->date_time);
 	STRNCPY(ping_rsp->description, ping_req->description);
 		
-	PUSH_MSG(ping_rsp);
+	PUSH_PING_RSP(ping_rsp);
 	log_notice("==ping handler end==");
 
 	return 0;
@@ -51,20 +51,19 @@ int ping_rsp_handler(shield_head_t *h)
 int send_ping(int fd)
 {
     log_notice("==send ping begin==");
-    CALLOC_MSG(ping_req, fd, CMD_PING_REQ);
+    CALLOC_MSG(ping_req, fd, CMD_PING_REQ, 0);
 
     __package_ping_head(&ping_req->msg_head, MT_PING_REQ, PING_REQ_BODY_LEN+MSG_HEAD_LEN, PING_REQ_BODY_LEN);
 
 	struct timeval timenow;
     gettimeofday( &timenow, NULL );
-	int now_time_ms = timenow.tv_usec/10000;
 
-	time_t timep;
-	struct tm *p;
+	time_t timep;  
+	struct tm *p;  
 	time(&timep);  
-	p =localtime(&timep);
+	p = localtime(&timep);
 
-	sprintf(ping_req->date_time, "%d%d%d%d%d%d%d", 1900 + p->tm_year, 1 + p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec, now_time_ms);
+	sprintf(ping_req->date_time, "%04d%02d%02d%02d%02d%02d%02d", 1900 + p->tm_year, 1 + p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec, 99);
 	STRNCPY(ping_req->description, "ping req!");
 
 	PUSH_MSG(ping_req);

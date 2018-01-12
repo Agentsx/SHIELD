@@ -57,7 +57,7 @@ static int __pro_read(int fd, void **m, size_t *len)
 	
 	*len = ilen + 1;
 	*m = msg;
-	return 0;	
+	return 0;
 }
 
 static int __writen(int fd, const void *vptr, size_t n)
@@ -84,8 +84,7 @@ static int __writen(int fd, const void *vptr, size_t n)
 
 static int __pro_write(int fd, void *msg, size_t len)
 {
-	int ret = __writen(fd, msg, len);
-	return ret == len ? 0 : -1;
+	return __writen(fd, msg, len);
 }
 
 protocol_t *init_protocol()
